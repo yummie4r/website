@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexDesk — Modern Office Supplies</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* DESIGN PRINCIPLES: COLOR SCHEME, WHITE SPACES, & CONTRAST */
+    :root {
+      --primary: #0F172A;      /* Deep Navy */
+      --accent: #2563EB;       /* Vivid Blue */
+      --accent-hover: #1D4ED8;
+      --bg-light: #F8FAFC;     /* Off-White Space */
+      --text-dark: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --white: #FFFFFF;
+      --star: #F59E0B;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
+
+    /* HIERARCHICAL TOPOGRAPHY & SPACING */
+    h1 { font-size: 2.75rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1.2; }
+    h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; }
+    h3 { font-size: 1.25rem; font-weight: 600; }
+    p { font-size: 1rem; color: var(--text-muted); }
+
+    /* LAYOUT: HEADER & NAV */
+    header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+    .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 2rem; }
+    .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+    .logo span { color: var(--accent); }
+    nav ul { display: flex; list-style: none; gap: 2rem; align-items: center; }
+    nav a { text-decoration: none; color: var(--text-dark); font-weight: 500; cursor: pointer; transition: color 0.2s; }
+    nav a:hover { color: var(--accent); }
+
+    .btn { background-color: var(--accent); color: var(--white); padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; display: inline-block; }
+    .btn:hover { background-color: var(--accent-hover); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dark); }
+    .btn-outline:hover { background: var(--border); }
+
+    /* RULE OF THIRDS HERO SECTION */
+    .hero { max-width: 1200px; margin: 0 auto; padding: 5rem 2rem; display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: center; }
+    .hero-card { background: var(--white); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+
+    /* MAIN CONTAINER & SECTIONS */
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .section { display: none; margin-bottom: 4rem; }
+    .section.active { display: block; }
+
+    /* PRODUCT GRID */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; margin-top: 1.5rem; }
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; }
+    .card img { width: 100%; height: 180px; object-fit: cover; border-radius: 6px; margin-bottom: 1rem; }
+    .price { font-size: 1.25rem; font-weight: 700; color: var(--primary); margin: 0.5rem 0; }
+
+    /* FORMS & INPUTS */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 500; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; }
+
+    /* TABLES FOR DASHBOARDS */
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: var(--white); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--bg-light); font-weight: 600; }
+
+    /* REVIEWS & STARS */
+    .star-rating { color: var(--star); font-size: 1.2rem; }
+    .review-item { border-bottom: 1px solid var(--border); padding: 0.75rem 0; }
+
+    /* SITEMAP & FOOTER */
+    footer { background: var(--primary); color: var(--white); padding: 4rem 2rem 2rem; margin-top: 6rem; }
+    .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 3rem; }
+    .footer-grid h4 { color: var(--white); margin-bottom: 1rem; }
+    .footer-grid a { color: var(--text-muted); text-decoration: none; display: block; margin-bottom: 0.5rem; }
+    .footer-grid a:hover { color: var(--white); }
+    .copyright { max-width: 1200px; margin: 3rem auto 0; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: var(--text-muted); font-size: 0.875rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="#" class="logo" onclick="switchTab('home')">Apex<span>Desk</span></a>
+      <nav>
+        <ul>
+          <li><a onclick="switchTab('home')">Home</a></li>
+          <li><a onclick="switchTab('store')">Store Page</a></li>
+          <li><a onclick="switchTab('about')">About Us</a></li>
+          <li><a onclick="switchTab('contact')">Contacts</a></li>
+          <li id="nav-dashboard" style="display:none;"><a onclick="switchTab('dashboard')">Dashboard</a></li>
+          <li id="nav-auth"><a class="btn" onclick="switchTab('auth')">Login / Register</a></li>
+          <li id="nav-logout" style="display:none;"><a class="btn btn-outline" onclick="handleLogout()">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="sec-home" class="section active">
+      <div class="hero">
+        <div>
+          <h1>Elevate Your Workspace Efficiency.</h1>
+          <p style="margin: 1.5rem 0 2rem; font-size: 1.125rem;">Ergonomic, sustainable, and premium office supplies tailored for modern professionals and remote teams.</p>
+          <a class="btn" style="padding: 0.8rem 1.8rem; font-size: 1.1rem;" onclick="switchTab('store')">Shop Collection</a>
+        </div>
+        <div class="hero-card">
+          <h3>Why Choose ApexDesk?</h3>
+          <ul style="margin-top: 1rem; padding-left: 1.2rem; color: var(--text-muted);">
+            <li style="margin-bottom: 0.5rem;">GCash Instant Checkout</li>
+            <li style="margin-bottom: 0.5rem;">Verified Peer-to-Peer Sellers</li>
+            <li style="margin-bottom: 0.5rem;">24/7 AI-Powered Support</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-store" class="section">
+      <h2>Store Products</h2>
+      <div id="product-list" class="grid"></div>
+    </section>
+
+    <section id="sec-product-detail" class="section">
+      <button class="btn btn-outline" onclick="switchTab('store')" style="margin-bottom: 1rem;">← Back to Store</button>
+      <div id="product-detail-content"></div>
+      
+      <div style="margin-top: 3rem; background: var(--white); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
+        <h3>Customer Reviews & Ratings</h3>
+        <div id="reviews-list" style="margin: 1rem 0 2rem;"></div>
+        
+        <form id="review-form" onsubmit="handleReviewSubmit(event)" style="display:none;">
+          <h4>Add Your Review</h4>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label>Rating</label>
+            <select id="review-rating" required>
+              <option value="5">5 Stars - Excellent</option>
+              <option value="4">4 Stars - Very Good</option>
+              <option value="3">3 Stars - Average</option>
+              <option value="2">2 Stars - Poor</option>
+              <option value="1">1 Star - Terrible</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Comment</label>
+            <textarea id="review-comment" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn">Submit Review</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="sec-dashboard" class="section">
+      <h2>User Dashboard</h2>
+      <div style="margin-bottom: 2rem;">
+        <button class="btn" onclick="showDashTab('buyer')">Bought History</button>
+        <button class="btn btn-outline" onclick="showDashTab('seller')">Seller Center & Sales</button>
+      </div>
+
+      <div id="dash-buyer">
+        <h3>My Purchase History</h3>
+        <table>
+          <thead>
+            <tr><th>Order ID</th><th>Product</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+          </thead>
+          <tbody id="buyer-orders-table"></tbody>
+        </table>
+      </div>
+
+      <div id="dash-seller" style="display:none;">
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+          <div style="background: var(--white); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+            <h3>Post New Product</h3>
+            <form onsubmit="handleCreateProduct(event)">
+              <div class="form-group"><label>Title</label><input type="text" id="p-title" required></div>
+              <div class="form-group"><label>Description</label><textarea id="p-desc" required></textarea></div>
+              <div class="form-group"><label>Price (PHP)</label><input type="number" step="0.01" id="p-price" required></div>
+              <div class="form-group"><label>Image URL</label><input type="url" id="p-image" required></div>
+              <button type="submit" class="btn" style="width:100%;">List Product</button>
+            </form>
+          </div>
+          <div>
+            <h3>Sales History</h3>
+            <table>
+              <thead>
+                <tr><th>Order ID</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+              </thead>
+              <tbody id="seller-orders-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-auth" class="section">
+      <div style="max-width: 400px; margin: 0 auto; background: var(--white); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
+        <h2 id="auth-title">Account Login</h2>
+        <form id="auth-form" onsubmit="handleAuth(event)">
+          <div class="form-group"><label>Email</label><input type="email" id="auth-email" required></div>
+          <div class="form-group"><label>Password</label><input type="password" id="auth-password" required></div>
+          <div class="form-group reg-field" style="display:none;"><label>Full Name</label><input type="text" id="auth-name"></div>
+          <div class="form-group reg-field" style="display:none;"><label>GCash Phone Number</label><input type="text" id="auth-gcash" placeholder="0917XXXXXXX"></div>
+          <button type="submit" class="btn" style="width:100%;" id="auth-btn">Login</button>
+        </form>
+        <p style="margin-top: 1rem; text-align: center;">
+          <a onclick="toggleAuthMode()" id="auth-toggle-link" style="color: var(--accent); cursor:pointer;">Need an account? Register here.</a>
+        </p>
+      </div>
+    </section>
+
+    <section id="sec-about" class="section">
+      <h2>About ApexDesk</h2>
+      <p style="margin-top:1rem;">ApexDesk is a marketplace dedicated to connecting office supply providers with teams and remote workers. Our goal is to streamline procurement using modern tech and instant digital payments.</p>
+    </section>
+
+    <section id="sec-contact" class="section">
+      <h2>Contact Us</h2>
+      <p style="margin-top:1rem;">Email: support@apexdesk.ph | Phone: +63 (02) 8123 4567</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <a href="#" class="logo" style="color:var(--white);">Apex<span>Desk</span></a>
+        <p style="margin-top: 1rem; color: #94A3B8;">Modern office solutions delivered directly to your workstation.</p>
+      </div>
+      <div>
+        <h4>Sitemap</h4>
+        <a onclick="switchTab('home')">Home</a>
+        <a onclick="switchTab('store')">Store Page</a>
+        <a onclick="switchTab('about')">About Us</a>
+        <a onclick="switchTab('contact')">Contacts</a>
+      </div>
+      <div>
+        <h4>Account</h4>
+        <a onclick="switchTab('auth')">Login / Register</a>
+        <a onclick="switchTab('dashboard')">Seller Dashboard</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="copyright">
+      &copy; 2026 ApexDesk Inc. All rights reserved. Powered by Supabase, PayMongo, & Vercel.
+    </div>
+  </footer>
+
+  <script type="text/javascript">
+    (function(d, t) {
+        var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        v.onload = function() {
+          window.voiceflow.chat.load({
+            verify: { projectID: 'YOUR_VOICEFLOW_PROJECT_ID' },
+            url: 'https://general-runtime.voiceflow.com',
+            versionID: 'production'
+          });
+        }
+        v.src = "https://cdn.voiceflow.com/widget/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+    })(document, 'script');
+  </script>
+
+  <script>
+    // SUPABASE CONFIGURATION
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentAuthMode = 'login';
+    let selectedProductId = null;
+
+    // INITIALIZATION
+    window.addEventListener('DOMContentLoaded', async () => {
+      checkUserSession();
+      loadProducts();
+    });
+
+    // NAVIGATION SYSTEM
+    function switchTab(tabId) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(`sec-${tabId}`).classList.add('active');
+    }
+
+    function showDashTab(type) {
+      document.getElementById('dash-buyer').style.display = type === 'buyer' ? 'block' : 'none';
+      document.getElementById('dash-seller').style.display = type === 'seller' ? 'block' : 'none';
+    }
+
+    // AUTHENTICATION MANAGEMENT
+    function toggleAuthMode() {
+      currentAuthMode = currentAuthMode === 'login' ? 'register' : 'login';
+      document.getElementById('auth-title').innerText = currentAuthMode === 'login' ? 'Account Login' : 'Register Account';
+      document.getElementById('auth-btn').innerText = currentAuthMode === 'login' ? 'Login' : 'Register';
+      document.querySelectorAll('.reg-field').forEach(el => el.style.display = currentAuthMode === 'login' ? 'none' : 'block');
+    }
+
+    async function checkUserSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        document.getElementById('nav-auth').style.display = 'none';
+        document.getElementById('nav-logout').style.display = 'block';
+        document.getElementById('nav-dashboard').style.display = 'block';
+        document.getElementById('review-form').style.display = 'block';
+        loadDashboardData(session.user.id);
+      } else {
+        document.getElementById('nav-auth').style.display = 'block';
+        document.getElementById('nav-logout').style.display = 'none';
+        document.getElementById('nav-dashboard').style.display = 'none';
+        document.getElementById('review-form').style.display = 'none';
+      }
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value;
+      const password = document.getElementById('auth-password').value;
+
+      if (currentAuthMode === 'login') {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) alert(error.message);
+        else location.reload();
+      } else {
+        const fullName = document.getElementById('auth-name').value;
+        const gcash = document.getElementById('auth-gcash').value;
+        
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) return alert(error.message);
+
+        if (data.user) {
+          await supabase.from('profiles').insert([{ id: data.user.id, full_name: fullName, gcash_number: gcash }]);
+          alert('Registration successful!');
+          location.reload();
+        }
+      }
+    }
+
+    async function handleLogout() {
+      await supabase.auth.signOut();
+      location.reload();
+    }
+
+    // STORE AND PRODUCTS
+    async function loadProducts() {
+      const { data: products, error } = await supabase.from('products').select('*');
+      const container = document.getElementById('product-list');
+      container.innerHTML = '';
+
+      if (error || !products) return;
+
+      products.forEach(p => {
+        container.innerHTML += `
+          <div class="card">
+            <div>
+              <img src="${p.image_url}" alt="${p.title}">
+              <h3>${p.title}</h3>
+              <p class="price">₱${p.price.toFixed(2)}</p>
+              <p>${p.description.substring(0, 60)}...</p>
+            </div>
+            <button class="btn" style="margin-top:1rem;" onclick="viewProduct('${p.id}')">View Details</button>
+          </div>
+        `;
+      });
+    }
+
+    async function viewProduct(id) {
+      selectedProductId = id;
+      const { data: p } = await supabase.from('products').select('*').eq('id', id).single();
+      
+      const content = document.getElementById('product-detail-content');
+      content.innerHTML = `
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; background: var(--white); padding: 2rem; border-radius: 8px;">
+          <img src="${p.image_url}" style="width:100%; border-radius:8px;">
+          <div>
+            <h2>${p.title}</h2>
+            <p class="price" style="font-size: 2rem;">₱${p.price.toFixed(2)}</p>
+            <p style="margin: 1rem 0;">${p.description}</p>
+            <button class="btn" style="padding: 1rem 2rem;" onclick="checkout('${p.id}')">Buy Now with GCash</button>
+          </div>
+        </div>
+      `;
+
+      loadReviews(id);
+      switchTab('product-detail');
+    }
+
+    // REVIEWS
+    async function loadReviews(productId) {
+      const { data: reviews } = await supabase.from('reviews').select('*, profiles(full_name)').eq('product-id', productId);
+      const list = document.getElementById('reviews-list');
+      list.innerHTML = reviews && reviews.length ? '' : '<p>No reviews yet.</p>';
+
+      if (reviews) {
+        reviews.forEach(r => {
+          list.innerHTML += `
+            <div class="review-item">
+              <div class="star-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+              <strong>${r.profiles?.full_name || 'Verified Buyer'}</strong>
+              <p>${r.comment}</p>
+            </div>
+          `;
+        });
+      }
+    }
+
+    async function handleReviewSubmit(e) {
+      e.preventDefault();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return alert('Must be logged in');
+
+      const rating = document.getElementById('review-rating').value;
+      const comment = document.getElementById('review-comment').value;
+
+      await supabase.from('reviews').insert([{
+        product_id: selectedProductId,
+        buyer_id: user.id,
+        rating: parseInt(rating),
+        comment
+      }]);
+
+      document.getElementById('review-comment').value = '';
+      loadReviews(selectedProductId);
+    }
+
+    // SELLER DASHBOARD
+    async function handleCreateProduct(e) {
+      e.preventDefault();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const product = {
+        seller_id: user.id,
+        title: document.getElementById('p-title').value,
+        description: document.getElementById('p-desc').value,
+        price: parseFloat(document.getElementById('p-price').value),
+        image_url: document.getElementById('p-image').value
+      };
+
+      const { error } = await supabase.from('products').insert([product]);
+      if (error) alert(error.message);
+      else {
+        alert('Product listed successfully!');
+        loadProducts();
+      }
+    }
+
+    async function loadDashboardData(userId) {
+      // Buyer Orders
+      const { data: bOrders } = await supabase.from('orders').select('*, products(title)').eq('buyer_id', userId);
+      const bTable = document.getElementById('buyer-orders-table');
+      bTable.innerHTML = bOrders?.map(o => `
+        <tr>
+          <td>${o.id.substring(0,8)}...</td>
+          <td>${o.products?.title || 'Product'}</td>
+          <td>₱${o.amount}</td>
+          <td><span style="color:${o.status === 'paid' ? 'green' : 'orange'}">${o.status}</span></td>
+          <td>${new Date(o.created_at).toLocaleDateString()}</td>
+        </tr>
+      `).join('') || '';
+
+      // Seller Orders
+      const { data: sOrders } = await supabase.from('orders').select('*').eq('seller_id', userId);
+      const sTable = document.getElementById('seller-orders-table');
+      sTable.innerHTML = sOrders?.map(o => `
+        <tr>
+          <td>${o.id.substring(0,8)}...</td>
+          <td>₱${o.amount}</td>
+          <td><span style="color:${o.status === 'paid' ? 'green' : 'orange'}">${o.status}</span></td>
+          <td>${new Date(o.created_at).toLocaleDateString()}</td>
+        </tr>
+      `).join('') || '';
+    }
+
+    // PAYMONGO CHECKOUT INTEGRATION
+    async function checkout(productId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Please login to proceed with checkout.');
+        switchTab('auth');
+        return;
+      }
+
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, buyerId: user.id })
+      });
+
+      const data = await res.json();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        alert('Checkout initialization failed: ' + data.error);
+      }
+    }
+  </script>
+</body>
+</html>
