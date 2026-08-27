@@ -34,7 +34,7 @@
     nav button.nav-link-btn { text-decoration: none; color: var(--text-dark); font-weight: 500; cursor: pointer; transition: color 0.2s; background: none; border: none; font-size: 1rem; padding: 0; }
     nav button.nav-link-btn:hover { color: var(--accent); }
 
-    .btn { background-color: var(--accent); color: var(--white); padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; display: inline-block; line-height: normal; }
+    .btn { background-color: var(--accent); color: var(--white); padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; display: inline-block; line-height: normal; text-align: center; }
     .btn:hover { background-color: var(--accent-hover); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dark); }
     .btn-outline:hover { background: var(--border); }
@@ -62,16 +62,10 @@
     .star-rating { color: var(--star); font-size: 1.2rem; }
     .review-item { border-bottom: 1px solid var(--border); padding: 0.75rem 0; }
 
-    /* POPUP MODAL STYLES */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 999; justify-content: center; align-items: center; }
-    .modal-overlay.open { display: flex; }
-    .modal-card { background: var(--white); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border); max-width: 420px; width: 90%; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-    .modal-close { position: absolute; top: 1rem; right: 1.25rem; background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
-
     footer { background: var(--primary); color: var(--white); padding: 4rem 2rem 2rem; margin-top: 6rem; }
     .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 3rem; }
     .footer-grid h4 { color: var(--white); margin-bottom: 1rem; }
-    .footer-grid a { color: var(--text-muted); text-decoration: none; display: block; margin-bottom: 0.5rem; }
+    .footer-grid a { color: var(--text-muted); text-decoration: none; display: block; margin-bottom: 0.5rem; cursor: pointer; }
     .footer-grid a:hover { color: var(--white); }
     .copyright { max-width: 1200px; margin: 3rem auto 0; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: var(--text-muted); font-size: 0.875rem; }
   </style>
@@ -88,7 +82,8 @@
           <li><button type="button" class="nav-link-btn" onclick="switchTab('about')">About Us</button></li>
           <li><button type="button" class="nav-link-btn" onclick="switchTab('contact')">Contacts</button></li>
           <li id="nav-dashboard" style="display:none;"><button type="button" class="nav-link-btn" onclick="switchTab('dashboard')">Dashboard</button></li>
-          <li id="nav-auth"><button type="button" class="btn" onclick="openAuthModal()">Login / Register</button></li>
+          <!-- DIRECT LINK TO AUTH PAGE -->
+          <li id="nav-auth"><a href="/auth.html" class="btn">Login / Register</a></li>
           <li id="nav-logout" style="display:none;"><button type="button" class="btn btn-outline" onclick="handleLogout()">Logout</button></li>
         </ul>
       </nav>
@@ -201,24 +196,6 @@
     </section>
   </main>
 
-  <!-- POPUP AUTHENTICATION WINDOW -->
-  <div id="auth-modal" class="modal-overlay" onclick="closeAuthModalOnBg(event)">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeAuthModal()">&times;</button>
-      <h2 id="auth-title">Account Login</h2>
-      <form id="auth-form" onsubmit="handleAuth(event)">
-        <div class="form-group" style="margin-top:1rem;"><label>Email</label><input type="email" id="auth-email" required></div>
-        <div class="form-group"><label>Password</label><input type="password" id="auth-password" required></div>
-        <div class="form-group reg-field" style="display:none;"><label>Full Name</label><input type="text" id="auth-name"></div>
-        <div class="form-group reg-field" style="display:none;"><label>GCash Phone Number</label><input type="text" id="auth-gcash" placeholder="0917XXXXXXX"></div>
-        <button type="submit" class="btn" style="width:100%; margin-top: 0.5rem;" id="auth-btn">Login</button>
-      </form>
-      <p style="margin-top: 1.25rem; text-align: center;">
-        <a onclick="toggleAuthMode(); return false;" id="auth-toggle-link" style="color: var(--accent); cursor:pointer;">Need an account? Register here.</a>
-      </p>
-    </div>
-  </div>
-
   <footer>
     <div class="footer-grid">
       <div>
@@ -234,7 +211,7 @@
       </div>
       <div>
         <h4>Account</h4>
-        <a onclick="openAuthModal()">Login / Register</a>
+        <a href="/auth.html">Login / Register</a>
         <a onclick="switchTab('dashboard')">Seller Dashboard</a>
       </div>
       <div>
@@ -253,21 +230,7 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_Nadrf5z4Cjm3S6tSwibs3w_6rMgKBEY';
 
     let supabase = null;
-    let currentAuthMode = 'login';
     let selectedProductId = null;
-
-    // POPUP MODAL CONTROLS
-    function openAuthModal() {
-      document.getElementById('auth-modal').classList.add('open');
-    }
-
-    function closeAuthModal() {
-      document.getElementById('auth-modal').classList.remove('open');
-    }
-
-    function closeAuthModalOnBg(e) {
-      if (e.target.id === 'auth-modal') closeAuthModal();
-    }
 
     function switchTab(tabId) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -281,25 +244,6 @@
     function showDashTab(type) {
       document.getElementById('dash-buyer').style.display = type === 'buyer' ? 'block' : 'none';
       document.getElementById('dash-seller').style.display = type === 'seller' ? 'block' : 'none';
-    }
-
-    function toggleAuthMode() {
-      currentAuthMode = currentAuthMode === 'login' ? 'register' : 'login';
-      
-      document.getElementById('auth-title').innerText = currentAuthMode === 'login' ? 'Account Login' : 'Register Account';
-      document.getElementById('auth-btn').innerText = currentAuthMode === 'login' ? 'Login' : 'Register';
-      
-      const isReg = currentAuthMode === 'register';
-      document.querySelectorAll('.reg-field').forEach(el => el.style.display = isReg ? 'block' : 'none');
-      
-      const nameInput = document.getElementById('auth-name');
-      const gcashInput = document.getElementById('auth-gcash');
-      if (nameInput) nameInput.required = isReg;
-      if (gcashInput) gcashInput.required = isReg;
-
-      document.getElementById('auth-toggle-link').innerText = isReg 
-        ? 'Already have an account? Login here.' 
-        : 'Need an account? Register here.';
     }
 
     function initSupabase() {
@@ -341,44 +285,6 @@
         }
       } catch (err) {
         console.error('Session check failed:', err);
-      }
-    }
-
-    async function handleAuth(e) {
-      if (e) e.preventDefault();
-
-      if (!supabase) {
-        alert('Supabase client failed to initialize.');
-        return;
-      }
-
-      const email = document.getElementById('auth-email').value;
-      const password = document.getElementById('auth-password').value;
-
-      try {
-        if (currentAuthMode === 'login') {
-          const { error } = await supabase.auth.signInWithPassword({ email, password });
-          if (error) alert(error.message);
-          else {
-            closeAuthModal();
-            location.reload();
-          }
-        } else {
-          const fullName = document.getElementById('auth-name').value;
-          const gcash = document.getElementById('auth-gcash').value;
-          
-          const { data, error } = await supabase.auth.signUp({ email, password });
-          if (error) return alert(error.message);
-
-          if (data.user) {
-            await supabase.from('profiles').insert([{ id: data.user.id, full_name: fullName, gcash_number: gcash }]);
-            alert('Registration successful!');
-            closeAuthModal();
-            location.reload();
-          }
-        }
-      } catch (err) {
-        alert('Authentication error: ' + err.message);
       }
     }
 
@@ -464,7 +370,11 @@
       e.preventDefault();
       if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return alert('Must be logged in');
+      if (!user) {
+        alert('Must be logged in');
+        window.location.href = '/auth.html';
+        return;
+      }
 
       const rating = document.getElementById('review-rating').value;
       const comment = document.getElementById('review-comment').value;
@@ -537,7 +447,7 @@
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         alert('Please login to proceed with checkout.');
-        openAuthModal();
+        window.location.href = '/auth.html';
         return;
       }
 
