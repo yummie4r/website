@@ -1,0 +1,12 @@
+{
+  "name": "apexdesk-office-supplies",
+  "version": "1.0.0",
+  "description": "Modern Office Supplies E-Commerce Platform",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve ."
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}
