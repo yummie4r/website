@@ -31,8 +31,8 @@
     .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; }
     .logo span { color: var(--accent); }
     nav ul { display: flex; list-style: none; gap: 2rem; align-items: center; }
-    nav a, nav button.nav-link-btn { text-decoration: none; color: var(--text-dark); font-weight: 500; cursor: pointer; transition: color 0.2s; background: none; border: none; font-size: 1rem; padding: 0; }
-    nav a:hover, nav button.nav-link-btn:hover { color: var(--accent); }
+    nav button.nav-link-btn { text-decoration: none; color: var(--text-dark); font-weight: 500; cursor: pointer; transition: color 0.2s; background: none; border: none; font-size: 1rem; padding: 0; }
+    nav button.nav-link-btn:hover { color: var(--accent); }
 
     .btn { background-color: var(--accent); color: var(--white); padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; display: inline-block; line-height: normal; }
     .btn:hover { background-color: var(--accent-hover); }
@@ -62,6 +62,12 @@
     .star-rating { color: var(--star); font-size: 1.2rem; }
     .review-item { border-bottom: 1px solid var(--border); padding: 0.75rem 0; }
 
+    /* POPUP MODAL STYLES */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 999; justify-content: center; align-items: center; }
+    .modal-overlay.open { display: flex; }
+    .modal-card { background: var(--white); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border); max-width: 420px; width: 90%; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+    .modal-close { position: absolute; top: 1rem; right: 1.25rem; background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+
     footer { background: var(--primary); color: var(--white); padding: 4rem 2rem 2rem; margin-top: 6rem; }
     .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 3rem; }
     .footer-grid h4 { color: var(--white); margin-bottom: 1rem; }
@@ -82,7 +88,7 @@
           <li><button type="button" class="nav-link-btn" onclick="switchTab('about')">About Us</button></li>
           <li><button type="button" class="nav-link-btn" onclick="switchTab('contact')">Contacts</button></li>
           <li id="nav-dashboard" style="display:none;"><button type="button" class="nav-link-btn" onclick="switchTab('dashboard')">Dashboard</button></li>
-          <li id="nav-auth"><button type="button" class="btn" onclick="switchTab('auth')">Login / Register</button></li>
+          <li id="nav-auth"><button type="button" class="btn" onclick="openAuthModal()">Login / Register</button></li>
           <li id="nav-logout" style="display:none;"><button type="button" class="btn btn-outline" onclick="handleLogout()">Logout</button></li>
         </ul>
       </nav>
@@ -184,22 +190,6 @@
       </div>
     </section>
 
-    <section id="sec-auth" class="section">
-      <div style="max-width: 400px; margin: 0 auto; background: var(--white); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
-        <h2 id="auth-title">Account Login</h2>
-        <form id="auth-form" onsubmit="handleAuth(event)">
-          <div class="form-group"><label>Email</label><input type="email" id="auth-email" required></div>
-          <div class="form-group"><label>Password</label><input type="password" id="auth-password" required></div>
-          <div class="form-group reg-field" style="display:none;"><label>Full Name</label><input type="text" id="auth-name"></div>
-          <div class="form-group reg-field" style="display:none;"><label>GCash Phone Number</label><input type="text" id="auth-gcash" placeholder="0917XXXXXXX"></div>
-          <button type="submit" class="btn" style="width:100%;" id="auth-btn">Login</button>
-        </form>
-        <p style="margin-top: 1rem; text-align: center;">
-          <a onclick="toggleAuthMode(); return false;" id="auth-toggle-link" style="color: var(--accent); cursor:pointer;">Need an account? Register here.</a>
-        </p>
-      </div>
-    </section>
-
     <section id="sec-about" class="section">
       <h2>About ApexDesk</h2>
       <p style="margin-top:1rem;">ApexDesk is a marketplace dedicated to connecting office supply providers with teams and remote workers. Our goal is to streamline procurement using modern tech and instant digital payments.</p>
@@ -210,6 +200,24 @@
       <p style="margin-top:1rem;">Email: support@apexdesk.ph | Phone: +63 (02) 8123 4567</p>
     </section>
   </main>
+
+  <!-- POPUP AUTHENTICATION WINDOW -->
+  <div id="auth-modal" class="modal-overlay" onclick="closeAuthModalOnBg(event)">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+      <h2 id="auth-title">Account Login</h2>
+      <form id="auth-form" onsubmit="handleAuth(event)">
+        <div class="form-group" style="margin-top:1rem;"><label>Email</label><input type="email" id="auth-email" required></div>
+        <div class="form-group"><label>Password</label><input type="password" id="auth-password" required></div>
+        <div class="form-group reg-field" style="display:none;"><label>Full Name</label><input type="text" id="auth-name"></div>
+        <div class="form-group reg-field" style="display:none;"><label>GCash Phone Number</label><input type="text" id="auth-gcash" placeholder="0917XXXXXXX"></div>
+        <button type="submit" class="btn" style="width:100%; margin-top: 0.5rem;" id="auth-btn">Login</button>
+      </form>
+      <p style="margin-top: 1.25rem; text-align: center;">
+        <a onclick="toggleAuthMode(); return false;" id="auth-toggle-link" style="color: var(--accent); cursor:pointer;">Need an account? Register here.</a>
+      </p>
+    </div>
+  </div>
 
   <footer>
     <div class="footer-grid">
@@ -226,7 +234,7 @@
       </div>
       <div>
         <h4>Account</h4>
-        <a onclick="switchTab('auth')">Login / Register</a>
+        <a onclick="openAuthModal()">Login / Register</a>
         <a onclick="switchTab('dashboard')">Seller Dashboard</a>
       </div>
       <div>
@@ -247,6 +255,19 @@
     let supabase = null;
     let currentAuthMode = 'login';
     let selectedProductId = null;
+
+    // POPUP MODAL CONTROLS
+    function openAuthModal() {
+      document.getElementById('auth-modal').classList.add('open');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.remove('open');
+    }
+
+    function closeAuthModalOnBg(e) {
+      if (e.target.id === 'auth-modal') closeAuthModal();
+    }
 
     function switchTab(tabId) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -338,7 +359,10 @@
         if (currentAuthMode === 'login') {
           const { error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) alert(error.message);
-          else location.reload();
+          else {
+            closeAuthModal();
+            location.reload();
+          }
         } else {
           const fullName = document.getElementById('auth-name').value;
           const gcash = document.getElementById('auth-gcash').value;
@@ -349,6 +373,7 @@
           if (data.user) {
             await supabase.from('profiles').insert([{ id: data.user.id, full_name: fullName, gcash_number: gcash }]);
             alert('Registration successful!');
+            closeAuthModal();
             location.reload();
           }
         }
@@ -512,7 +537,7 @@
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         alert('Please login to proceed with checkout.');
-        switchTab('auth');
+        openAuthModal();
         return;
       }
 
