@@ -31,10 +31,10 @@
     .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; }
     .logo span { color: var(--accent); }
     nav ul { display: flex; list-style: none; gap: 2rem; align-items: center; }
-    nav a { text-decoration: none; color: var(--text-dark); font-weight: 500; cursor: pointer; transition: color 0.2s; }
-    nav a:hover { color: var(--accent); }
+    nav a, nav button.nav-link-btn { text-decoration: none; color: var(--text-dark); font-weight: 500; cursor: pointer; transition: color 0.2s; background: none; border: none; font-size: 1rem; padding: 0; }
+    nav a:hover, nav button.nav-link-btn:hover { color: var(--accent); }
 
-    .btn { background-color: var(--accent); color: var(--white); padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; display: inline-block; }
+    .btn { background-color: var(--accent); color: var(--white); padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; display: inline-block; line-height: normal; }
     .btn:hover { background-color: var(--accent-hover); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dark); }
     .btn-outline:hover { background: var(--border); }
@@ -74,14 +74,14 @@
 
   <header>
     <div class="nav-container">
-      <a href="#" class="logo" onclick="switchTab('home')">Apex<span>Desk</span></a>
+      <a href="#" class="logo" onclick="switchTab('home'); return false;">Apex<span>Desk</span></a>
       <nav>
         <ul>
-          <li><a onclick="switchTab('home')">Home</a></li>
-          <li><a onclick="switchTab('store')">Store Page</a></li>
-          <li><a onclick="switchTab('about')">About Us</a></li>
-          <li><a onclick="switchTab('contact')">Contacts</a></li>
-          <li id="nav-dashboard" style="display:none;"><a onclick="switchTab('dashboard')">Dashboard</a></li>
+          <li><button type="button" class="nav-link-btn" onclick="switchTab('home')">Home</button></li>
+          <li><button type="button" class="nav-link-btn" onclick="switchTab('store')">Store Page</button></li>
+          <li><button type="button" class="nav-link-btn" onclick="switchTab('about')">About Us</button></li>
+          <li><button type="button" class="nav-link-btn" onclick="switchTab('contact')">Contacts</button></li>
+          <li id="nav-dashboard" style="display:none;"><button type="button" class="nav-link-btn" onclick="switchTab('dashboard')">Dashboard</button></li>
           <li id="nav-auth"><button type="button" class="btn" onclick="switchTab('auth')">Login / Register</button></li>
           <li id="nav-logout" style="display:none;"><button type="button" class="btn btn-outline" onclick="handleLogout()">Logout</button></li>
         </ul>
@@ -195,7 +195,7 @@
           <button type="submit" class="btn" style="width:100%;" id="auth-btn">Login</button>
         </form>
         <p style="margin-top: 1rem; text-align: center;">
-          <a onclick="toggleAuthMode()" id="auth-toggle-link" style="color: var(--accent); cursor:pointer;">Need an account? Register here.</a>
+          <a onclick="toggleAuthMode(); return false;" id="auth-toggle-link" style="color: var(--accent); cursor:pointer;">Need an account? Register here.</a>
         </p>
       </div>
     </section>
@@ -214,7 +214,7 @@
   <footer>
     <div class="footer-grid">
       <div>
-        <a href="#" class="logo" style="color:var(--white);">Apex<span>Desk</span></a>
+        <a href="#" class="logo" style="color:var(--white);" onclick="switchTab('home'); return false;">Apex<span>Desk</span></a>
         <p style="margin-top: 1rem; color: #94A3B8;">Modern office solutions delivered directly to your workstation.</p>
       </div>
       <div>
@@ -247,22 +247,6 @@
     let supabase = null;
     let currentAuthMode = 'login';
     let selectedProductId = null;
-
-    function initSupabase() {
-      try {
-        if (typeof window.supabase !== 'undefined') {
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          checkUserSession();
-          loadProducts();
-        } else {
-          setTimeout(initSupabase, 100);
-        }
-      } catch (err) {
-        console.error('Supabase initialization error:', err);
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', initSupabase);
 
     function switchTab(tabId) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -297,21 +281,42 @@
         : 'Need an account? Register here.';
     }
 
+    function initSupabase() {
+      try {
+        if (typeof window.supabase !== 'undefined') {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          checkUserSession();
+          loadProducts();
+        } else {
+          setTimeout(initSupabase, 100);
+        }
+      } catch (err) {
+        console.error('Supabase initialization error:', err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initSupabase);
+
     async function checkUserSession() {
       if (!supabase) return;
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        const navAuth = document.getElementById('nav-auth');
+        const navLogout = document.getElementById('nav-logout');
+        const navDash = document.getElementById('nav-dashboard');
+        const revForm = document.getElementById('review-form');
+
         if (session) {
-          document.getElementById('nav-auth').style.display = 'none';
-          document.getElementById('nav-logout').style.display = 'block';
-          document.getElementById('nav-dashboard').style.display = 'block';
-          document.getElementById('review-form').style.display = 'block';
+          if (navAuth) navAuth.style.display = 'none';
+          if (navLogout) navLogout.style.display = 'block';
+          if (navDash) navDash.style.display = 'block';
+          if (revForm) revForm.style.display = 'block';
           loadDashboardData(session.user.id);
         } else {
-          document.getElementById('nav-auth').style.display = 'block';
-          document.getElementById('nav-logout').style.display = 'none';
-          document.getElementById('nav-dashboard').style.display = 'none';
-          document.getElementById('review-form').style.display = 'none';
+          if (navAuth) navAuth.style.display = 'block';
+          if (navLogout) navLogout.style.display = 'none';
+          if (navDash) navDash.style.display = 'none';
+          if (revForm) revForm.style.display = 'none';
         }
       } catch (err) {
         console.error('Session check failed:', err);
@@ -363,6 +368,7 @@
       try {
         const { data: products, error } = await supabase.from('products').select('*');
         const container = document.getElementById('product-list');
+        if (!container) return;
         container.innerHTML = '';
 
         if (error || !products) return;
@@ -391,17 +397,19 @@
       const { data: p } = await supabase.from('products').select('*').eq('id', id).single();
       
       const content = document.getElementById('product-detail-content');
-      content.innerHTML = `
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; background: var(--white); padding: 2rem; border-radius: 8px;">
-          <img src="${p.image_url}" style="width:100%; border-radius:8px;">
-          <div>
-            <h2>${p.title}</h2>
-            <p class="price" style="font-size: 2rem;">₱${p.price.toFixed(2)}</p>
-            <p style="margin: 1rem 0;">${p.description}</p>
-            <button type="button" class="btn" style="padding: 1rem 2rem;" onclick="checkout('${p.id}')">Buy Now with GCash</button>
+      if (content && p) {
+        content.innerHTML = `
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; background: var(--white); padding: 2rem; border-radius: 8px;">
+            <img src="${p.image_url}" style="width:100%; border-radius:8px;">
+            <div>
+              <h2>${p.title}</h2>
+              <p class="price" style="font-size: 2rem;">₱${p.price.toFixed(2)}</p>
+              <p style="margin: 1rem 0;">${p.description}</p>
+              <button type="button" class="btn" style="padding: 1rem 2rem;" onclick="checkout('${p.id}')">Buy Now with GCash</button>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
 
       loadReviews(id);
       switchTab('product-detail');
@@ -411,6 +419,7 @@
       if (!supabase) return;
       const { data: reviews } = await supabase.from('reviews').select('*, profiles(full_name)').eq('product_id', productId);
       const list = document.getElementById('reviews-list');
+      if (!list) return;
       list.innerHTML = reviews && reviews.length ? '' : '<p>No reviews yet.</p>';
 
       if (reviews) {
@@ -472,26 +481,30 @@
       
       const { data: bOrders } = await supabase.from('orders').select('*, products(title)').eq('buyer_id', userId);
       const bTable = document.getElementById('buyer-orders-table');
-      bTable.innerHTML = bOrders?.map(o => `
-        <tr>
-          <td>${o.id.substring(0,8)}...</td>
-          <td>${o.products?.title || 'Product'}</td>
-          <td>₱${o.amount}</td>
-          <td><span style="color:${o.status === 'paid' ? 'green' : 'orange'}">${o.status}</span></td>
-          <td>${new Date(o.created_at).toLocaleDateString()}</td>
-        </tr>
-      `).join('') || '';
+      if (bTable) {
+        bTable.innerHTML = bOrders?.map(o => `
+          <tr>
+            <td>${o.id.substring(0,8)}...</td>
+            <td>${o.products?.title || 'Product'}</td>
+            <td>₱${o.amount}</td>
+            <td><span style="color:${o.status === 'paid' ? 'green' : 'orange'}">${o.status}</span></td>
+            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join('') || '';
+      }
 
       const { data: sOrders } = await supabase.from('orders').select('*').eq('seller_id', userId);
       const sTable = document.getElementById('seller-orders-table');
-      sTable.innerHTML = sOrders?.map(o => `
-        <tr>
-          <td>${o.id.substring(0,8)}...</td>
-          <td>₱${o.amount}</td>
-          <td><span style="color:${o.status === 'paid' ? 'green' : 'orange'}">${o.status}</span></td>
-          <td>${new Date(o.created_at).toLocaleDateString()}</td>
-        </tr>
-      `).join('') || '';
+      if (sTable) {
+        sTable.innerHTML = sOrders?.map(o => `
+          <tr>
+            <td>${o.id.substring(0,8)}...</td>
+            <td>₱${o.amount}</td>
+            <td><span style="color:${o.status === 'paid' ? 'green' : 'orange'}">${o.status}</span></td>
+            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join('') || '';
+      }
     }
 
     async function checkout(productId) {
