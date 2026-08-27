@@ -6,12 +6,11 @@
   <title>ApexDesk — Modern Office Supplies</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* DESIGN PRINCIPLES: COLOR SCHEME, WHITE SPACES, & CONTRAST */
     :root {
-      --primary: #0F172A;      /* Deep Navy */
-      --accent: #2563EB;       /* Vivid Blue */
+      --primary: #0F172A;
+      --accent: #2563EB;
       --accent-hover: #1D4ED8;
-      --bg-light: #F8FAFC;     /* Off-White Space */
+      --bg-light: #F8FAFC;
       --text-dark: #0F172A;
       --text-muted: #64748B;
       --border: #E2E8F0;
@@ -22,13 +21,11 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
 
-    /* HIERARCHICAL TOPOGRAPHY & SPACING */
     h1 { font-size: 2.75rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1.2; }
     h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; }
     h3 { font-size: 1.25rem; font-weight: 600; }
     p { font-size: 1rem; color: var(--text-muted); }
 
-    /* LAYOUT: HEADER & NAV */
     header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
     .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 2rem; }
     .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; }
@@ -42,36 +39,29 @@
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dark); }
     .btn-outline:hover { background: var(--border); }
 
-    /* RULE OF THIRDS HERO SECTION */
     .hero { max-width: 1200px; margin: 0 auto; padding: 5rem 2rem; display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: center; }
     .hero-card { background: var(--white); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
 
-    /* MAIN CONTAINER & SECTIONS */
     main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
     .section { display: none; margin-bottom: 4rem; }
     .section.active { display: block; }
 
-    /* PRODUCT GRID */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; margin-top: 1.5rem; }
     .card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; }
     .card img { width: 100%; height: 180px; object-fit: cover; border-radius: 6px; margin-bottom: 1rem; }
     .price { font-size: 1.25rem; font-weight: 700; color: var(--primary); margin: 0.5rem 0; }
 
-    /* FORMS & INPUTS */
     .form-group { margin-bottom: 1.25rem; }
     .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 500; }
     .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; }
 
-    /* TABLES FOR DASHBOARDS */
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: var(--white); border-radius: 8px; overflow: hidden; }
     th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: var(--bg-light); font-weight: 600; }
 
-    /* REVIEWS & STARS */
     .star-rating { color: var(--star); font-size: 1.2rem; }
     .review-item { border-bottom: 1px solid var(--border); padding: 0.75rem 0; }
 
-    /* SITEMAP & FOOTER */
     footer { background: var(--primary); color: var(--white); padding: 4rem 2rem 2rem; margin-top: 6rem; }
     .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 3rem; }
     .footer-grid h4 { color: var(--white); margin-bottom: 1rem; }
@@ -250,22 +240,9 @@
     </div>
   </footer>
 
-  <script type="text/javascript">
-    (function(d, t) {
-        var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
-        v.onload = function() {
-          window.voiceflow.chat.load({
-            verify: { projectID: 'YOUR_VOICEFLOW_PROJECT_ID' },
-            url: 'https://general-runtime.voiceflow.com',
-            versionID: 'production'
-          });
-        }
-        v.src = "https://cdn.voiceflow.com/widget/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
-    })(document, 'script');
-  </script>
-
   <script>
     // SUPABASE CONFIGURATION
+    // TODO: Replace placeholders below with your actual credentials from your Supabase Dashboard
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
     const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
@@ -273,14 +250,22 @@
     let currentAuthMode = 'login';
     let selectedProductId = null;
 
-    // INITIALIZATION FUNCTION WITH CDN WAIT-CHECK
+    // SAFE INITIALIZATION LOGIC
     function initSupabase() {
-      if (typeof window.supabase !== 'undefined') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        checkUserSession();
-        loadProducts();
-      } else {
-        setTimeout(initSupabase, 100);
+      try {
+        if (typeof window.supabase !== 'undefined') {
+          if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            checkUserSession();
+            loadProducts();
+          } else {
+            console.warn('Supabase URL/Key placeholders detected. Please provide real credentials.');
+          }
+        } else {
+          setTimeout(initSupabase, 100);
+        }
+      } catch (err) {
+        console.error('Supabase initialization error:', err);
       }
     }
 
@@ -300,7 +285,7 @@
       document.getElementById('dash-seller').style.display = type === 'seller' ? 'block' : 'none';
     }
 
-    // AUTHENTICATION MANAGEMENT
+    // AUTHENTICATION TOGGLE
     function toggleAuthMode() {
       currentAuthMode = currentAuthMode === 'login' ? 'register' : 'login';
       
@@ -320,46 +305,60 @@
         : 'Need an account? Register here.';
     }
 
+    // SESSION CHECK
     async function checkUserSession() {
       if (!supabase) return;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        document.getElementById('nav-auth').style.display = 'none';
-        document.getElementById('nav-logout').style.display = 'block';
-        document.getElementById('nav-dashboard').style.display = 'block';
-        document.getElementById('review-form').style.display = 'block';
-        loadDashboardData(session.user.id);
-      } else {
-        document.getElementById('nav-auth').style.display = 'block';
-        document.getElementById('nav-logout').style.display = 'none';
-        document.getElementById('nav-dashboard').style.display = 'none';
-        document.getElementById('review-form').style.display = 'none';
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          document.getElementById('nav-auth').style.display = 'none';
+          document.getElementById('nav-logout').style.display = 'block';
+          document.getElementById('nav-dashboard').style.display = 'block';
+          document.getElementById('review-form').style.display = 'block';
+          loadDashboardData(session.user.id);
+        } else {
+          document.getElementById('nav-auth').style.display = 'block';
+          document.getElementById('nav-logout').style.display = 'none';
+          document.getElementById('nav-dashboard').style.display = 'none';
+          document.getElementById('review-form').style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Session check failed:', err);
       }
     }
 
+    // AUTHENTICATION SUBMISSION
     async function handleAuth(e) {
-      e.preventDefault();
-      if (!supabase) return alert('Supabase library is still loading. Please try again in a few seconds.');
+      if (e) e.preventDefault();
+
+      if (!supabase) {
+        alert('Supabase credentials are missing or client failed to initialize. Please replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY in index.html.');
+        return;
+      }
 
       const email = document.getElementById('auth-email').value;
       const password = document.getElementById('auth-password').value;
 
-      if (currentAuthMode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) alert(error.message);
-        else location.reload();
-      } else {
-        const fullName = document.getElementById('auth-name').value;
-        const gcash = document.getElementById('auth-gcash').value;
-        
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) return alert(error.message);
+      try {
+        if (currentAuthMode === 'login') {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) alert(error.message);
+          else location.reload();
+        } else {
+          const fullName = document.getElementById('auth-name').value;
+          const gcash = document.getElementById('auth-gcash').value;
+          
+          const { data, error } = await supabase.auth.signUp({ email, password });
+          if (error) return alert(error.message);
 
-        if (data.user) {
-          await supabase.from('profiles').insert([{ id: data.user.id, full_name: fullName, gcash_number: gcash }]);
-          alert('Registration successful!');
-          location.reload();
+          if (data.user) {
+            await supabase.from('profiles').insert([{ id: data.user.id, full_name: fullName, gcash_number: gcash }]);
+            alert('Registration successful!');
+            location.reload();
+          }
         }
+      } catch (err) {
+        alert('Authentication error: ' + err.message);
       }
     }
 
@@ -372,25 +371,29 @@
     // STORE AND PRODUCTS
     async function loadProducts() {
       if (!supabase) return;
-      const { data: products, error } = await supabase.from('products').select('*');
-      const container = document.getElementById('product-list');
-      container.innerHTML = '';
+      try {
+        const { data: products, error } = await supabase.from('products').select('*');
+        const container = document.getElementById('product-list');
+        container.innerHTML = '';
 
-      if (error || !products) return;
+        if (error || !products) return;
 
-      products.forEach(p => {
-        container.innerHTML += `
-          <div class="card">
-            <div>
-              <img src="${p.image_url}" alt="${p.title}">
-              <h3>${p.title}</h3>
-              <p class="price">₱${p.price.toFixed(2)}</p>
-              <p>${p.description.substring(0, 60)}...</p>
+        products.forEach(p => {
+          container.innerHTML += `
+            <div class="card">
+              <div>
+                <img src="${p.image_url}" alt="${p.title}">
+                <h3>${p.title}</h3>
+                <p class="price">₱${p.price.toFixed(2)}</p>
+                <p>${p.description.substring(0, 60)}...</p>
+              </div>
+              <button class="btn" style="margin-top:1rem;" onclick="viewProduct('${p.id}')">View Details</button>
             </div>
-            <button class="btn" style="margin-top:1rem;" onclick="viewProduct('${p.id}')">View Details</button>
-          </div>
-        `;
-      });
+          `;
+        });
+      } catch (err) {
+        console.error('Error loading products:', err);
+      }
     }
 
     async function viewProduct(id) {
@@ -455,7 +458,7 @@
       loadReviews(selectedProductId);
     }
 
-    // SELLER DASHBOARD
+    // DASHBOARD
     async function handleCreateProduct(e) {
       e.preventDefault();
       if (!supabase) return;
@@ -480,7 +483,6 @@
     async function loadDashboardData(userId) {
       if (!supabase) return;
       
-      // Buyer Orders
       const { data: bOrders } = await supabase.from('orders').select('*, products(title)').eq('buyer_id', userId);
       const bTable = document.getElementById('buyer-orders-table');
       bTable.innerHTML = bOrders?.map(o => `
@@ -493,7 +495,6 @@
         </tr>
       `).join('') || '';
 
-      // Seller Orders
       const { data: sOrders } = await supabase.from('orders').select('*').eq('seller_id', userId);
       const sTable = document.getElementById('seller-orders-table');
       sTable.innerHTML = sOrders?.map(o => `
@@ -506,7 +507,7 @@
       `).join('') || '';
     }
 
-    // PAYMONGO CHECKOUT INTEGRATION
+    // PAYMONGO INTEGRATION
     async function checkout(productId) {
       if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
