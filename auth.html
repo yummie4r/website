@@ -82,7 +82,6 @@
     let supabase = null;
     let currentAuthMode = 'login';
 
-    // Initialize Supabase safely
     if (typeof window.supabase !== 'undefined') {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
