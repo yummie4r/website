@@ -82,8 +82,8 @@
           <li><a onclick="switchTab('about')">About Us</a></li>
           <li><a onclick="switchTab('contact')">Contacts</a></li>
           <li id="nav-dashboard" style="display:none;"><a onclick="switchTab('dashboard')">Dashboard</a></li>
-          <li id="nav-auth"><a class="btn" onclick="switchTab('auth')">Login / Register</a></li>
-          <li id="nav-logout" style="display:none;"><a class="btn btn-outline" onclick="handleLogout()">Logout</a></li>
+          <li id="nav-auth"><button type="button" class="btn" onclick="switchTab('auth')">Login / Register</button></li>
+          <li id="nav-logout" style="display:none;"><button type="button" class="btn btn-outline" onclick="handleLogout()">Logout</button></li>
         </ul>
       </nav>
     </div>
@@ -95,7 +95,7 @@
         <div>
           <h1>Elevate Your Workspace Efficiency.</h1>
           <p style="margin: 1.5rem 0 2rem; font-size: 1.125rem;">Ergonomic, sustainable, and premium office supplies tailored for modern professionals and remote teams.</p>
-          <a class="btn" style="padding: 0.8rem 1.8rem; font-size: 1.1rem;" onclick="switchTab('store')">Shop Collection</a>
+          <button type="button" class="btn" style="padding: 0.8rem 1.8rem; font-size: 1.1rem;" onclick="switchTab('store')">Shop Collection</button>
         </div>
         <div class="hero-card">
           <h3>Why Choose ApexDesk?</h3>
@@ -114,7 +114,7 @@
     </section>
 
     <section id="sec-product-detail" class="section">
-      <button class="btn btn-outline" onclick="switchTab('store')" style="margin-bottom: 1rem;">← Back to Store</button>
+      <button type="button" class="btn btn-outline" onclick="switchTab('store')" style="margin-bottom: 1rem;">← Back to Store</button>
       <div id="product-detail-content"></div>
       
       <div style="margin-top: 3rem; background: var(--white); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
@@ -145,8 +145,8 @@
     <section id="sec-dashboard" class="section">
       <h2>User Dashboard</h2>
       <div style="margin-bottom: 2rem;">
-        <button class="btn" onclick="showDashTab('buyer')">Bought History</button>
-        <button class="btn btn-outline" onclick="showDashTab('seller')">Seller Center & Sales</button>
+        <button type="button" class="btn" onclick="showDashTab('buyer')">Bought History</button>
+        <button type="button" class="btn btn-outline" onclick="showDashTab('seller')">Seller Center & Sales</button>
       </div>
 
       <div id="dash-buyer">
@@ -241,8 +241,6 @@
   </footer>
 
   <script>
-    // SUPABASE CONFIGURATION
-    // TODO: Replace placeholders below with your actual credentials from your Supabase Dashboard
     const SUPABASE_URL = 'https://kttjrrpiionugwnkexuv.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Nadrf5z4Cjm3S6tSwibs3w_6rMgKBEY';
 
@@ -250,17 +248,12 @@
     let currentAuthMode = 'login';
     let selectedProductId = null;
 
-    // SAFE INITIALIZATION LOGIC
     function initSupabase() {
       try {
         if (typeof window.supabase !== 'undefined') {
-          if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            checkUserSession();
-            loadProducts();
-          } else {
-            console.warn('Supabase URL/Key placeholders detected. Please provide real credentials.');
-          }
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          checkUserSession();
+          loadProducts();
         } else {
           setTimeout(initSupabase, 100);
         }
@@ -271,12 +264,12 @@
 
     window.addEventListener('DOMContentLoaded', initSupabase);
 
-    // NAVIGATION SYSTEM
     function switchTab(tabId) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       const targetSection = document.getElementById(`sec-${tabId}`);
       if (targetSection) {
         targetSection.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
 
@@ -285,7 +278,6 @@
       document.getElementById('dash-seller').style.display = type === 'seller' ? 'block' : 'none';
     }
 
-    // AUTHENTICATION TOGGLE
     function toggleAuthMode() {
       currentAuthMode = currentAuthMode === 'login' ? 'register' : 'login';
       
@@ -305,7 +297,6 @@
         : 'Need an account? Register here.';
     }
 
-    // SESSION CHECK
     async function checkUserSession() {
       if (!supabase) return;
       try {
@@ -327,12 +318,11 @@
       }
     }
 
-    // AUTHENTICATION SUBMISSION
     async function handleAuth(e) {
       if (e) e.preventDefault();
 
       if (!supabase) {
-        alert('Supabase credentials are missing or client failed to initialize. Please replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY in index.html.');
+        alert('Supabase client failed to initialize.');
         return;
       }
 
@@ -368,7 +358,6 @@
       location.reload();
     }
 
-    // STORE AND PRODUCTS
     async function loadProducts() {
       if (!supabase) return;
       try {
@@ -387,7 +376,7 @@
                 <p class="price">₱${p.price.toFixed(2)}</p>
                 <p>${p.description.substring(0, 60)}...</p>
               </div>
-              <button class="btn" style="margin-top:1rem;" onclick="viewProduct('${p.id}')">View Details</button>
+              <button type="button" class="btn" style="margin-top:1rem;" onclick="viewProduct('${p.id}')">View Details</button>
             </div>
           `;
         });
@@ -409,7 +398,7 @@
             <h2>${p.title}</h2>
             <p class="price" style="font-size: 2rem;">₱${p.price.toFixed(2)}</p>
             <p style="margin: 1rem 0;">${p.description}</p>
-            <button class="btn" style="padding: 1rem 2rem;" onclick="checkout('${p.id}')">Buy Now with GCash</button>
+            <button type="button" class="btn" style="padding: 1rem 2rem;" onclick="checkout('${p.id}')">Buy Now with GCash</button>
           </div>
         </div>
       `;
@@ -418,7 +407,6 @@
       switchTab('product-detail');
     }
 
-    // REVIEWS
     async function loadReviews(productId) {
       if (!supabase) return;
       const { data: reviews } = await supabase.from('reviews').select('*, profiles(full_name)').eq('product_id', productId);
@@ -458,7 +446,6 @@
       loadReviews(selectedProductId);
     }
 
-    // DASHBOARD
     async function handleCreateProduct(e) {
       e.preventDefault();
       if (!supabase) return;
@@ -507,7 +494,6 @@
       `).join('') || '';
     }
 
-    // PAYMONGO INTEGRATION
     async function checkout(productId) {
       if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
