@@ -82,7 +82,6 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <header>
     <div class="nav-container">
       <a href="#" class="logo" onclick="switchTab('home')">Apex<span>Desk</span></a>
@@ -101,7 +100,6 @@
   </header>
 
   <main>
-    <!-- HERO / FEATURES (HOME) -->
     <section id="sec-home" class="section active">
       <div class="hero">
         <div>
@@ -120,13 +118,11 @@
       </div>
     </section>
 
-    <!-- STORE PAGE -->
     <section id="sec-store" class="section">
       <h2>Store Products</h2>
       <div id="product-list" class="grid"></div>
     </section>
 
-    <!-- PRODUCT DETAIL & REVIEWS -->
     <section id="sec-product-detail" class="section">
       <button class="btn btn-outline" onclick="switchTab('store')" style="margin-bottom: 1rem;">← Back to Store</button>
       <div id="product-detail-content"></div>
@@ -156,7 +152,6 @@
       </div>
     </section>
 
-    <!-- DASHBOARD (SELLER / BUYER) -->
     <section id="sec-dashboard" class="section">
       <h2>User Dashboard</h2>
       <div style="margin-bottom: 2rem;">
@@ -164,7 +159,6 @@
         <button class="btn btn-outline" onclick="showDashTab('seller')">Seller Center & Sales</button>
       </div>
 
-      <!-- Buyer History -->
       <div id="dash-buyer">
         <h3>My Purchase History</h3>
         <table>
@@ -175,7 +169,6 @@
         </table>
       </div>
 
-      <!-- Seller Management -->
       <div id="dash-seller" style="display:none;">
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
           <div style="background: var(--white); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
@@ -201,7 +194,6 @@
       </div>
     </section>
 
-    <!-- AUTHENTICATION (LOGIN/REGISTER) -->
     <section id="sec-auth" class="section">
       <div style="max-width: 400px; margin: 0 auto; background: var(--white); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
         <h2 id="auth-title">Account Login</h2>
@@ -218,20 +210,17 @@
       </div>
     </section>
 
-    <!-- ABOUT US -->
     <section id="sec-about" class="section">
       <h2>About ApexDesk</h2>
       <p style="margin-top:1rem;">ApexDesk is a marketplace dedicated to connecting office supply providers with teams and remote workers. Our goal is to streamline procurement using modern tech and instant digital payments.</p>
     </section>
 
-    <!-- CONTACTS -->
     <section id="sec-contact" class="section">
       <h2>Contact Us</h2>
       <p style="margin-top:1rem;">Email: support@apexdesk.ph | Phone: +63 (02) 8123 4567</p>
     </section>
   </main>
 
-  <!-- FOOTER & SITEMAP -->
   <footer>
     <div class="footer-grid">
       <div>
@@ -261,7 +250,6 @@
     </div>
   </footer>
 
-  <!-- VOICEFLOW AI CHATBOT EMBED -->
   <script type="text/javascript">
     (function(d, t) {
         var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
@@ -276,26 +264,35 @@
     })(document, 'script');
   </script>
 
-  <!-- APPLICATION LOGIC -->
   <script>
     // SUPABASE CONFIGURATION
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
     const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    let supabase = null;
     let currentAuthMode = 'login';
     let selectedProductId = null;
 
-    // INITIALIZATION
-    window.addEventListener('DOMContentLoaded', async () => {
-      checkUserSession();
-      loadProducts();
-    });
+    // INITIALIZATION FUNCTION WITH CDN WAIT-CHECK
+    function initSupabase() {
+      if (typeof window.supabase !== 'undefined') {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        checkUserSession();
+        loadProducts();
+      } else {
+        setTimeout(initSupabase, 100);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initSupabase);
 
     // NAVIGATION SYSTEM
     function switchTab(tabId) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(`sec-${tabId}`).classList.add('active');
+      const targetSection = document.getElementById(`sec-${tabId}`);
+      if (targetSection) {
+        targetSection.classList.add('active');
+      }
     }
 
     function showDashTab(type) {
@@ -312,8 +309,11 @@
       
       const isReg = currentAuthMode === 'register';
       document.querySelectorAll('.reg-field').forEach(el => el.style.display = isReg ? 'block' : 'none');
-      document.getElementById('auth-name').required = isReg;
-      document.getElementById('auth-gcash').required = isReg;
+      
+      const nameInput = document.getElementById('auth-name');
+      const gcashInput = document.getElementById('auth-gcash');
+      if (nameInput) nameInput.required = isReg;
+      if (gcashInput) gcashInput.required = isReg;
 
       document.getElementById('auth-toggle-link').innerText = isReg 
         ? 'Already have an account? Login here.' 
@@ -321,6 +321,7 @@
     }
 
     async function checkUserSession() {
+      if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         document.getElementById('nav-auth').style.display = 'none';
@@ -338,6 +339,8 @@
 
     async function handleAuth(e) {
       e.preventDefault();
+      if (!supabase) return alert('Supabase library is still loading. Please try again in a few seconds.');
+
       const email = document.getElementById('auth-email').value;
       const password = document.getElementById('auth-password').value;
 
@@ -361,12 +364,14 @@
     }
 
     async function handleLogout() {
+      if (!supabase) return;
       await supabase.auth.signOut();
       location.reload();
     }
 
     // STORE AND PRODUCTS
     async function loadProducts() {
+      if (!supabase) return;
       const { data: products, error } = await supabase.from('products').select('*');
       const container = document.getElementById('product-list');
       container.innerHTML = '';
@@ -389,6 +394,7 @@
     }
 
     async function viewProduct(id) {
+      if (!supabase) return;
       selectedProductId = id;
       const { data: p } = await supabase.from('products').select('*').eq('id', id).single();
       
@@ -411,7 +417,7 @@
 
     // REVIEWS
     async function loadReviews(productId) {
-      // Fixed column name from product-id to product_id
+      if (!supabase) return;
       const { data: reviews } = await supabase.from('reviews').select('*, profiles(full_name)').eq('product_id', productId);
       const list = document.getElementById('reviews-list');
       list.innerHTML = reviews && reviews.length ? '' : '<p>No reviews yet.</p>';
@@ -431,6 +437,7 @@
 
     async function handleReviewSubmit(e) {
       e.preventDefault();
+      if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return alert('Must be logged in');
 
@@ -451,6 +458,7 @@
     // SELLER DASHBOARD
     async function handleCreateProduct(e) {
       e.preventDefault();
+      if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
 
       const product = {
@@ -470,6 +478,8 @@
     }
 
     async function loadDashboardData(userId) {
+      if (!supabase) return;
+      
       // Buyer Orders
       const { data: bOrders } = await supabase.from('orders').select('*, products(title)').eq('buyer_id', userId);
       const bTable = document.getElementById('buyer-orders-table');
@@ -498,6 +508,7 @@
 
     // PAYMONGO CHECKOUT INTEGRATION
     async function checkout(productId) {
+      if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         alert('Please login to proceed with checkout.');
