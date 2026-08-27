@@ -82,6 +82,7 @@
 </head>
 <body>
 
+  <!-- HEADER -->
   <header>
     <div class="nav-container">
       <a href="#" class="logo" onclick="switchTab('home')">Apex<span>Desk</span></a>
@@ -100,6 +101,7 @@
   </header>
 
   <main>
+    <!-- HERO / FEATURES (HOME) -->
     <section id="sec-home" class="section active">
       <div class="hero">
         <div>
@@ -118,11 +120,13 @@
       </div>
     </section>
 
+    <!-- STORE PAGE -->
     <section id="sec-store" class="section">
       <h2>Store Products</h2>
       <div id="product-list" class="grid"></div>
     </section>
 
+    <!-- PRODUCT DETAIL & REVIEWS -->
     <section id="sec-product-detail" class="section">
       <button class="btn btn-outline" onclick="switchTab('store')" style="margin-bottom: 1rem;">← Back to Store</button>
       <div id="product-detail-content"></div>
@@ -152,6 +156,7 @@
       </div>
     </section>
 
+    <!-- DASHBOARD (SELLER / BUYER) -->
     <section id="sec-dashboard" class="section">
       <h2>User Dashboard</h2>
       <div style="margin-bottom: 2rem;">
@@ -159,6 +164,7 @@
         <button class="btn btn-outline" onclick="showDashTab('seller')">Seller Center & Sales</button>
       </div>
 
+      <!-- Buyer History -->
       <div id="dash-buyer">
         <h3>My Purchase History</h3>
         <table>
@@ -169,6 +175,7 @@
         </table>
       </div>
 
+      <!-- Seller Management -->
       <div id="dash-seller" style="display:none;">
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
           <div style="background: var(--white); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
@@ -194,6 +201,7 @@
       </div>
     </section>
 
+    <!-- AUTHENTICATION (LOGIN/REGISTER) -->
     <section id="sec-auth" class="section">
       <div style="max-width: 400px; margin: 0 auto; background: var(--white); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
         <h2 id="auth-title">Account Login</h2>
@@ -210,17 +218,20 @@
       </div>
     </section>
 
+    <!-- ABOUT US -->
     <section id="sec-about" class="section">
       <h2>About ApexDesk</h2>
       <p style="margin-top:1rem;">ApexDesk is a marketplace dedicated to connecting office supply providers with teams and remote workers. Our goal is to streamline procurement using modern tech and instant digital payments.</p>
     </section>
 
+    <!-- CONTACTS -->
     <section id="sec-contact" class="section">
       <h2>Contact Us</h2>
       <p style="margin-top:1rem;">Email: support@apexdesk.ph | Phone: +63 (02) 8123 4567</p>
     </section>
   </main>
 
+  <!-- FOOTER & SITEMAP -->
   <footer>
     <div class="footer-grid">
       <div>
@@ -250,6 +261,7 @@
     </div>
   </footer>
 
+  <!-- VOICEFLOW AI CHATBOT EMBED -->
   <script type="text/javascript">
     (function(d, t) {
         var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
@@ -264,6 +276,7 @@
     })(document, 'script');
   </script>
 
+  <!-- APPLICATION LOGIC -->
   <script>
     // SUPABASE CONFIGURATION
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
@@ -293,9 +306,18 @@
     // AUTHENTICATION MANAGEMENT
     function toggleAuthMode() {
       currentAuthMode = currentAuthMode === 'login' ? 'register' : 'login';
+      
       document.getElementById('auth-title').innerText = currentAuthMode === 'login' ? 'Account Login' : 'Register Account';
       document.getElementById('auth-btn').innerText = currentAuthMode === 'login' ? 'Login' : 'Register';
-      document.querySelectorAll('.reg-field').forEach(el => el.style.display = currentAuthMode === 'login' ? 'none' : 'block');
+      
+      const isReg = currentAuthMode === 'register';
+      document.querySelectorAll('.reg-field').forEach(el => el.style.display = isReg ? 'block' : 'none');
+      document.getElementById('auth-name').required = isReg;
+      document.getElementById('auth-gcash').required = isReg;
+
+      document.getElementById('auth-toggle-link').innerText = isReg 
+        ? 'Already have an account? Login here.' 
+        : 'Need an account? Register here.';
     }
 
     async function checkUserSession() {
@@ -389,7 +411,8 @@
 
     // REVIEWS
     async function loadReviews(productId) {
-      const { data: reviews } = await supabase.from('reviews').select('*, profiles(full_name)').eq('product-id', productId);
+      // Fixed column name from product-id to product_id
+      const { data: reviews } = await supabase.from('reviews').select('*, profiles(full_name)').eq('product_id', productId);
       const list = document.getElementById('reviews-list');
       list.innerHTML = reviews && reviews.length ? '' : '<p>No reviews yet.</p>';
 
