@@ -55,6 +55,12 @@
     .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 500; }
     .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; }
 
+    /* AUTH MODAL STYLES */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal-card { background: var(--white); width: 100%; max-width: 400px; padding: 2rem; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); position: relative; }
+    .close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); }
+
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: var(--white); border-radius: 8px; overflow: hidden; }
     th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: var(--bg-light); font-weight: 600; }
@@ -82,8 +88,7 @@
           <li><button type="button" class="nav-link-btn" onclick="switchTab('about')">About Us</button></li>
           <li><button type="button" class="nav-link-btn" onclick="switchTab('contact')">Contacts</button></li>
           <li id="nav-dashboard" style="display:none;"><button type="button" class="nav-link-btn" onclick="switchTab('dashboard')">Dashboard</button></li>
-          <!-- DIRECT LINK TO AUTH PAGE -->
-          <li id="nav-auth"><a href="/auth.html" class="btn">Login / Register</a></li>
+          <li id="nav-auth"><button type="button" class="btn" onclick="openAuthModal()">Login / Register</button></li>
           <li id="nav-logout" style="display:none;"><button type="button" class="btn btn-outline" onclick="handleLogout()">Logout</button></li>
         </ul>
       </nav>
@@ -196,6 +201,41 @@
     </section>
   </main>
 
+  <!-- AUTHENTICATION POPUP MODAL -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="close-btn" onclick="closeAuthModal()">✕</button>
+      <h2 id="modal-title" style="margin-bottom:1.5rem; font-size:1.5rem;">Login</h2>
+
+      <form onsubmit="handleAuthSubmit(event)">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="modal-email" required placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="modal-password" required placeholder="••••••••">
+        </div>
+
+        <div class="form-group reg-only" style="display:none;">
+          <label>Full Name</label>
+          <input type="text" id="modal-name" placeholder="John Doe">
+        </div>
+        <div class="form-group reg-only" style="display:none;">
+          <label>GCash Mobile Number</label>
+          <input type="text" id="modal-gcash" placeholder="09171234567">
+        </div>
+
+        <button type="submit" class="btn" id="modal-submit-btn" style="width:100%; margin-top:0.5rem;">Login</button>
+      </form>
+
+      <p style="text-align:center; margin-top:1.5rem; font-size:0.9rem;">
+        <span id="modal-toggle-text">Don't have an account?</span>
+        <a style="color:var(--accent); cursor:pointer; font-weight:600;" onclick="toggleAuthMode()" id="modal-toggle-link">Register</a>
+      </p>
+    </div>
+  </div>
+
   <footer>
     <div class="footer-grid">
       <div>
@@ -211,7 +251,7 @@
       </div>
       <div>
         <h4>Account</h4>
-        <a href="/auth.html">Login / Register</a>
+        <a onclick="openAuthModal()">Login / Register</a>
         <a onclick="switchTab('dashboard')">Seller Dashboard</a>
       </div>
       <div>
@@ -230,13 +270,37 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_Nadrf5z4Cjm3S6tSwibs3w_6rMgKBEY';
 
     let supabase = null;
+    let authMode = 'login';
     let selectedProductId = null;
+
+    // Direct modal controls
+    window.openAuthModal = function() {
+      const modal = document.getElementById('auth-modal');
+      if (modal) modal.classList.add('open');
+    };
+
+    window.closeAuthModal = function() {
+      const modal = document.getElementById('auth-modal');
+      if (modal) modal.classList.remove('open');
+    };
+
+    window.toggleAuthMode = function() {
+      authMode = authMode === 'login' ? 'register' : 'login';
+      const isReg = authMode === 'register';
+
+      document.getElementById('modal-title').innerText = isReg ? 'Register Account' : 'Login';
+      document.getElementById('modal-submit-btn').innerText = isReg ? 'Register' : 'Login';
+      document.getElementById('modal-toggle-text').innerText = isReg ? 'Already have an account?' : "Don't have an account?";
+      document.getElementById('modal-toggle-link').innerText = isReg ? 'Login' : 'Register';
+
+      document.querySelectorAll('.reg-only').forEach(el => el.style.display = isReg ? 'block' : 'none');
+    };
 
     function switchTab(tabId) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      const targetSection = document.getElementById(`sec-${tabId}`);
-      if (targetSection) {
-        targetSection.classList.add('active');
+      const target = document.getElementById(`sec-${tabId}`);
+      if (target) {
+        target.classList.add('active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
@@ -253,10 +317,10 @@
           checkUserSession();
           loadProducts();
         } else {
-          setTimeout(initSupabase, 100);
+          setTimeout(initSupabase, 200);
         }
       } catch (err) {
-        console.error('Supabase initialization error:', err);
+        console.error('Supabase init error:', err);
       }
     }
 
@@ -284,7 +348,44 @@
           if (revForm) revForm.style.display = 'none';
         }
       } catch (err) {
-        console.error('Session check failed:', err);
+        console.error('Session error:', err);
+      }
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      if (!supabase) {
+        alert('Authentication service not connected.');
+        return;
+      }
+
+      const email = document.getElementById('modal-email').value;
+      const password = document.getElementById('modal-password').value;
+
+      try {
+        if (authMode === 'login') {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) alert(error.message);
+          else {
+            closeAuthModal();
+            checkUserSession();
+          }
+        } else {
+          const fullName = document.getElementById('modal-name').value;
+          const gcash = document.getElementById('modal-gcash').value;
+
+          const { data, error } = await supabase.auth.signUp({ email, password });
+          if (error) return alert(error.message);
+
+          if (data.user) {
+            await supabase.from('profiles').insert([{ id: data.user.id, full_name: fullName, gcash_number: gcash }]);
+            alert('Registration completed successfully!');
+            closeAuthModal();
+            checkUserSession();
+          }
+        }
+      } catch (err) {
+        alert('Auth error: ' + err.message);
       }
     }
 
@@ -296,38 +397,32 @@
 
     async function loadProducts() {
       if (!supabase) return;
-      try {
-        const { data: products, error } = await supabase.from('products').select('*');
-        const container = document.getElementById('product-list');
-        if (!container) return;
-        container.innerHTML = '';
+      const { data: products } = await supabase.from('products').select('*');
+      const container = document.getElementById('product-list');
+      if (!container || !products) return;
 
-        if (error || !products) return;
-
-        products.forEach(p => {
-          container.innerHTML += `
-            <div class="card">
-              <div>
-                <img src="${p.image_url}" alt="${p.title}">
-                <h3>${p.title}</h3>
-                <p class="price">₱${p.price.toFixed(2)}</p>
-                <p>${p.description.substring(0, 60)}...</p>
-              </div>
-              <button type="button" class="btn" style="margin-top:1rem;" onclick="viewProduct('${p.id}')">View Details</button>
+      container.innerHTML = '';
+      products.forEach(p => {
+        container.innerHTML += `
+          <div class="card">
+            <div>
+              <img src="${p.image_url}" alt="${p.title}">
+              <h3>${p.title}</h3>
+              <p class="price">₱${p.price.toFixed(2)}</p>
+              <p>${p.description.substring(0, 60)}...</p>
             </div>
-          `;
-        });
-      } catch (err) {
-        console.error('Error loading products:', err);
-      }
+            <button type="button" class="btn" style="margin-top:1rem;" onclick="viewProduct('${p.id}')">View Details</button>
+          </div>
+        `;
+      });
     }
 
     async function viewProduct(id) {
       if (!supabase) return;
       selectedProductId = id;
       const { data: p } = await supabase.from('products').select('*').eq('id', id).single();
-      
       const content = document.getElementById('product-detail-content');
+
       if (content && p) {
         content.innerHTML = `
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; background: var(--white); padding: 2rem; border-radius: 8px;">
@@ -341,7 +436,6 @@
           </div>
         `;
       }
-
       loadReviews(id);
       switchTab('product-detail');
     }
@@ -351,8 +445,8 @@
       const { data: reviews } = await supabase.from('reviews').select('*, profiles(full_name)').eq('product_id', productId);
       const list = document.getElementById('reviews-list');
       if (!list) return;
-      list.innerHTML = reviews && reviews.length ? '' : '<p>No reviews yet.</p>';
 
+      list.innerHTML = reviews && reviews.length ? '' : '<p>No reviews yet.</p>';
       if (reviews) {
         reviews.forEach(r => {
           list.innerHTML += `
@@ -371,19 +465,15 @@
       if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        alert('Must be logged in');
-        window.location.href = '/auth.html';
+        openAuthModal();
         return;
       }
-
-      const rating = document.getElementById('review-rating').value;
-      const comment = document.getElementById('review-comment').value;
 
       await supabase.from('reviews').insert([{
         product_id: selectedProductId,
         buyer_id: user.id,
-        rating: parseInt(rating),
-        comment
+        rating: parseInt(document.getElementById('review-rating').value),
+        comment: document.getElementById('review-comment').value
       }]);
 
       document.getElementById('review-comment').value = '';
@@ -413,9 +503,9 @@
 
     async function loadDashboardData(userId) {
       if (!supabase) return;
-      
       const { data: bOrders } = await supabase.from('orders').select('*, products(title)').eq('buyer_id', userId);
       const bTable = document.getElementById('buyer-orders-table');
+
       if (bTable) {
         bTable.innerHTML = bOrders?.map(o => `
           <tr>
@@ -446,8 +536,7 @@
       if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        alert('Please login to proceed with checkout.');
-        window.location.href = '/auth.html';
+        openAuthModal();
         return;
       }
 
