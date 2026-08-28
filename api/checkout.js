@@ -1,9 +1,5 @@
-module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+export default async function handler(req, res) {
+  // Allow requests from frontend
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -13,31 +9,26 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { cart } = req.body || {};
+    const { cart } = req.body;
 
-    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+    if (!cart || cart.length === 0) {
       return res.status(400).json({ error: 'Cart is empty' });
     }
 
-    const secretKey = process.env.PAYMONGO_SECRET_KEY;
-    if (!secretKey) {
-      return res.status(500).json({ error: 'PAYMONGO_SECRET_KEY missing' });
-    }
-
+    // Format line items for PayMongo
     const lineItems = cart.map((item) => ({
-      name: item.title || 'Item',
-      amount: Math.round((item.price || 0) * 100),
+      name: item.title || 'Product',
+      amount: Math.round((item.price || 0) * 100), // amount in centavos
       currency: 'PHP',
       quantity: 1,
     }));
 
-    const authHeader = `Basic ${Buffer.from(`${secretKey.trim()}:`).toString('base64')}`;
-
-    const paymongoRes = await fetch('https://api.paymongo.com/v1/checkout_sessions', {
+    // Call PayMongo API securely from server-side
+    const paymongoResponse = await fetch('https://api.paymongo.com/v1/checkout_sessions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: authHeader,
+        Authorization: 'Basic ' + Buffer.from(process.env.PAYMONGO_SECRET_KEY + ':').toString('base64'),
       },
       body: JSON.stringify({
         data: {
@@ -47,23 +38,23 @@ module.exports = async (req, res) => {
             show_line_items: true,
             payment_method_types: ['gcash', 'paymaya', 'card'],
             line_items: lineItems,
-            success_url: `https://${req.headers.host}/?status=success`,
-            cancel_url: `https://${req.headers.host}/?status=cancelled`,
+            success_url: req.headers.origin + '/?status=success',
+            cancel_url: req.headers.origin + '/?status=cancelled',
           },
         },
       }),
     });
 
-    const data = await paymongoRes.json();
+    const data = await paymongoResponse.json();
 
-    if (!paymongoRes.ok) {
-      return res.status(400).json({
-        error: data.errors?.[0]?.detail || 'PayMongo API error'
+    if (!paymongoResponse.ok) {
+      return res.status(paymongoResponse.status).json({ 
+        error: data.errors?.[0]?.detail || 'Failed to create PayMongo checkout session' 
       });
     }
 
     return res.status(200).json({ checkoutUrl: data.data.attributes.checkout_url });
   } catch (err) {
-    return res.status(500).json({ error: err.message || 'Internal Server Error' });
+    return res.status(500).json({ error: err.message });
   }
-};
+}
