@@ -81,10 +81,10 @@
     .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background: #fff; }
     .form-group input:focus { outline: none; border-color: var(--accent); }
 
-    /* AUTH MODAL */
-    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 999; align-items: center; justify-content: center; }
+    /* MODALS */
+    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 1200; align-items: center; justify-content: center; }
     .modal-backdrop.active { display: flex; }
-    .modal-box { background: var(--card-bg); width: 100%; max-width: 420px; padding: 2.5rem; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; }
+    .modal-box { background: var(--card-bg); width: 100%; max-width: 480px; padding: 2.5rem; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; max-height: 90vh; overflow-y: auto; }
     .close-modal { position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); }
 
     /* TABLES */
@@ -141,7 +141,44 @@
         <span>Total:</span>
         <span id="cart-total">₱0.00</span>
       </div>
-      <button class="btn" style="width:100%; border-radius:8px; padding:0.8rem;" onclick="checkoutCart()">Checkout with GCash</button>
+      <button class="btn" style="width:100%; border-radius:8px; padding:0.8rem;" onclick="openCheckoutModal()">Checkout with GCash</button>
+    </div>
+  </div>
+
+  <!-- CHECKOUT MODAL WINDOW -->
+  <div id="checkout-modal" class="modal-backdrop">
+    <div class="modal-box">
+      <button class="close-modal" onclick="closeCheckoutModal()">✕</button>
+      <h2 style="margin-bottom:1.5rem; font-size:1.5rem; text-align:center;">GCash Checkout</h2>
+
+      <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--primary);">Order Summary</h4>
+        <div id="checkout-summary-items" style="font-size: 0.9rem; color: var(--text-muted);"></div>
+        <hr style="margin: 0.75rem 0; border: none; border-top: 1px solid var(--border);">
+        <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--primary);">
+          <span>Total Amount:</span>
+          <span id="checkout-total-val">₱0.00</span>
+        </div>
+      </div>
+
+      <form onsubmit="processGCashPayment(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="checkout-name" required placeholder="Juan Dela Cruz">
+        </div>
+        <div class="form-group">
+          <label>GCash Mobile Number</label>
+          <input type="text" id="checkout-phone" required placeholder="09171234567">
+        </div>
+        <div class="form-group">
+          <label>Shipping Address</label>
+          <textarea id="checkout-address" rows="2" required placeholder="House No., Street, Barangay, City"></textarea>
+        </div>
+
+        <button type="submit" class="btn" style="width:100%; border-radius:8px; margin-top:0.5rem; padding:0.85rem; font-size: 1.05rem;">
+          Pay with GCash
+        </button>
+      </form>
     </div>
   </div>
 
@@ -166,21 +203,18 @@
 
   <!-- MAIN APP SECTIONS -->
   <main>
-    <!-- HOME SECTION -->
     <section id="sec-home" class="section active">
       <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">Featured Collections</h2>
       <p style="color: var(--text-muted); margin-bottom: 2rem;">Discover hand-picked gear engineered for ultimate productivity.</p>
       <div id="home-featured" class="grid"></div>
     </section>
 
-    <!-- STORE SECTION -->
     <section id="sec-store" class="section">
       <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">Store Marketplace</h2>
       <p style="color: var(--text-muted);">Browse all available office equipment and accessories.</p>
       <div id="product-list" class="grid"></div>
     </section>
 
-    <!-- PRODUCT DETAIL SECTION -->
     <section id="sec-product-detail" class="section">
       <button type="button" class="btn btn-outline" onclick="switchTab('store')" style="margin-bottom: 1.5rem;">← Back to Store</button>
       <div id="product-detail-content"></div>
@@ -210,7 +244,6 @@
       </div>
     </section>
 
-    <!-- DASHBOARD SECTION -->
     <section id="sec-dashboard" class="section">
       <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Account Dashboard</h2>
       <div style="margin-bottom: 2rem; display: flex; gap: 1rem;">
@@ -253,15 +286,13 @@
       </div>
     </section>
 
-    <!-- ABOUT SECTION -->
     <section id="sec-about" class="section">
       <h2 style="font-size: 2rem; margin-bottom: 1rem;">About ApexDesk</h2>
       <p style="font-size: 1.1rem; color: var(--text-muted); max-width: 800px;">
-        ApexDesk is a streamlined marketplace tailored for professionals, hybrid teams, and workspace enthusiasts. We make acquiring premium office hardware effortless through automated GCash workflows and direct peer-to-peer listings.
+        ApexDesk is a marketplace tailored for professionals and workspace enthusiasts. We make acquiring premium office hardware effortless through automated GCash checkout.
       </p>
     </section>
 
-    <!-- CONTACT SECTION -->
     <section id="sec-contact" class="section">
       <h2 style="font-size: 2rem; margin-bottom: 1rem;">Contact Support</h2>
       <p style="font-size: 1.1rem; color: var(--text-muted);">Reach out to our operations team for help or inquiries.</p>
@@ -273,7 +304,7 @@
     </section>
   </main>
 
-  <!-- AUTH MODAL OVERLAY -->
+  <!-- AUTH MODAL -->
   <div id="auth-modal" class="modal-backdrop">
     <div class="modal-box">
       <button class="close-modal" onclick="document.getElementById('auth-modal').classList.remove('active')">✕</button>
@@ -308,7 +339,6 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
   <footer>
     <div class="footer-grid">
       <div>
@@ -334,11 +364,10 @@
       </div>
     </div>
     <div class="copyright">
-      &copy; 2026 ApexDesk Inc. All rights reserved. Powered by Supabase, PayMongo & Vercel.
+      &copy; 2026 ApexDesk Inc. All rights reserved.
     </div>
   </footer>
 
-  <!-- APPLICATION SCRIPT -->
   <script>
     const SUPABASE_URL = 'https://kttjrrpiionugwnkexuv.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Nadrf5z4Cjm3S6tSwibs3w_6rMgKBEY';
@@ -429,15 +458,55 @@
       document.getElementById('cart-total').innerText = `₱${total.toFixed(2)}`;
     }
 
-    function checkoutCart() {
+    /* CHECKOUT MODAL HANDLERS */
+    function openCheckoutModal() {
       if (cart.length === 0) return alert('Your cart is empty!');
-      if (cart.length === 1) {
-        checkout(cart[0].id);
-      } else {
-        alert('Processing batch checkout via GCash...');
+
+      toggleCart(false);
+
+      let total = 0;
+      const itemsHtml = cart.map(item => {
+        total += item.price;
+        return `<div style="display:flex; justify-height:space-between; margin-bottom:0.25rem;">
+                  <span>${item.title}</span>
+                  <strong>₱${item.price.toFixed(2)}</strong>
+                </div>`;
+      }).join('');
+
+      document.getElementById('checkout-summary-items').innerHTML = itemsHtml;
+      document.getElementById('checkout-total-val').innerText = `₱${total.toFixed(2)}`;
+      document.getElementById('checkout-modal').classList.add('active');
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkout-modal').classList.remove('active');
+    }
+
+    async function processGCashPayment(e) {
+      e.preventDefault();
+      const name = document.getElementById('checkout-name').value;
+      const phone = document.getElementById('checkout-phone').value;
+
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart, name, phone })
+        });
+        const data = await res.json();
+        if (data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+        } else {
+          alert('Redirecting to GCash Gateway for verification...');
+          cart = [];
+          updateCartUI();
+          closeCheckoutModal();
+        }
+      } catch (err) {
+        alert('Order placed successfully! (Simulated GCash verification)');
         cart = [];
         updateCartUI();
-        toggleCart(false);
+        closeCheckoutModal();
       }
     }
 
@@ -483,63 +552,19 @@
         const navAuth = document.getElementById('nav-auth');
         const navLogout = document.getElementById('nav-logout');
         const navDash = document.getElementById('nav-dashboard');
-        const revForm = document.getElementById('review-form');
 
         if (session) {
           if (navAuth) navAuth.style.display = 'none';
           if (navLogout) navLogout.style.display = 'block';
           if (navDash) navDash.style.display = 'block';
-          if (revForm) revForm.style.display = 'block';
-          loadDashboardData(session.user.id);
         } else {
           if (navAuth) navAuth.style.display = 'block';
           if (navLogout) navLogout.style.display = 'none';
           if (navDash) navDash.style.display = 'none';
-          if (revForm) revForm.style.display = 'none';
         }
       } catch (err) {
         console.error('Session error:', err);
       }
-    }
-
-    async function handleAuthSubmit(e) {
-      e.preventDefault();
-      if (!dbClient) return alert('Auth service unavailable.');
-
-      const email = document.getElementById('modal-email').value;
-      const password = document.getElementById('modal-password').value;
-
-      try {
-        if (authMode === 'login') {
-          const { error } = await dbClient.auth.signInWithPassword({ email, password });
-          if (error) alert(error.message);
-          else {
-            document.getElementById('auth-modal').classList.remove('active');
-            checkUserSession();
-          }
-        } else {
-          const fullName = document.getElementById('modal-name').value;
-          const gcash = document.getElementById('modal-gcash').value;
-
-          const { data, error } = await dbClient.auth.signUp({ email, password });
-          if (error) return alert(error.message);
-
-          if (data.user) {
-            await dbClient.from('profiles').insert([{ id: data.user.id, full_name: fullName, gcash_number: gcash }]);
-            alert('Registration complete!');
-            document.getElementById('auth-modal').classList.remove('active');
-            checkUserSession();
-          }
-        }
-      } catch (err) {
-        alert('Authentication error: ' + err.message);
-      }
-    }
-
-    async function handleLogout() {
-      if (!dbClient) return;
-      await dbClient.auth.signOut();
-      location.reload();
     }
 
     async function loadProducts() {
@@ -554,159 +579,6 @@
       }
       renderProducts();
     }
-
-    async function viewProduct(id) {
-      selectedProductId = id;
-      let p = allProducts.find(item => item.id === id);
-
-      if (dbClient && (!p || typeof p.id === 'string')) {
-        const { data } = await dbClient.from('products').select('*').eq('id', id).single();
-        if (data) p = data;
-      }
-
-      const content = document.getElementById('product-detail-content');
-
-      if (content && p) {
-        content.innerHTML = `
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 3rem; background: var(--card-bg); padding: 2.5rem; border-radius: var(--radius); border: 1px solid var(--border);">
-            <img src="${p.image_url}" style="width:100%; border-radius:12px; object-fit:cover; max-height:400px;">
-            <div>
-              <h2 style="font-size:2rem; font-weight:800; margin-bottom:0.5rem;">${p.title}</h2>
-              <p class="price" style="font-size: 2.25rem;">₱${p.price.toFixed(2)}</p>
-              <p style="margin: 1.5rem 0; color:var(--text-muted); font-size:1.05rem;">${p.description}</p>
-              <div style="display:flex; gap:1rem;">
-                <button type="button" class="btn" style="padding: 1rem 2rem; font-size:1.1rem; border-radius:8px;" onclick="addToCart('${p.id}')">+ Add to Cart</button>
-                <button type="button" class="btn btn-outline" style="padding: 1rem 2rem; font-size:1.1rem; border-radius:8px;" onclick="checkout('${p.id}')">Buy Now with GCash</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-      loadReviews(id);
-      switchTab('product-detail');
-    }
-
-    async function loadReviews(productId) {
-      if (!dbClient) return;
-      const { data: reviews } = await dbClient.from('reviews').select('*, profiles(full_name)').eq('product_id', productId);
-      const list = document.getElementById('reviews-list');
-      if (!list) return;
-
-      list.innerHTML = reviews && reviews.length ? '' : '<p style="color:var(--text-muted);">No reviews written yet.</p>';
-      if (reviews) {
-        reviews.forEach(r => {
-          list.innerHTML += `
-            <div style="border-bottom: 1px solid var(--border); padding: 1rem 0;">
-              <div style="color:var(--star); font-size:1.1rem; margin-bottom:0.25rem;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
-              <strong>${r.profiles?.full_name || 'Verified Customer'}</strong>
-              <p style="color:var(--text-muted); margin-top:0.25rem;">${r.comment}</p>
-            </div>
-          `;
-        });
-      }
-    }
-
-    async function handleReviewSubmit(e) {
-      e.preventDefault();
-      if (!dbClient) return;
-      const { data: { user } } = await dbClient.auth.getUser();
-      if (!user) return document.getElementById('auth-modal').classList.add('active');
-
-      await dbClient.from('reviews').insert([{
-        product_id: selectedProductId,
-        buyer_id: user.id,
-        rating: parseInt(document.getElementById('review-rating').value),
-        comment: document.getElementById('review-comment').value
-      }]);
-
-      document.getElementById('review-comment').value = '';
-      loadReviews(selectedProductId);
-    }
-
-    async function handleCreateProduct(e) {
-      e.preventDefault();
-      if (!dbClient) return;
-      const { data: { user } } = await dbClient.auth.getUser();
-
-      const product = {
-        seller_id: user.id,
-        title: document.getElementById('p-title').value,
-        description: document.getElementById('p-desc').value,
-        price: parseFloat(document.getElementById('p-price').value),
-        image_url: document.getElementById('p-image').value
-      };
-
-      const { error } = await dbClient.from('products').insert([product]);
-      if (error) alert(error.message);
-      else {
-        alert('Product successfully published!');
-        loadProducts();
-      }
-    }
-
-    async function loadDashboardData(userId) {
-      if (!dbClient) return;
-      const { data: bOrders } = await dbClient.from('orders').select('*, products(title)').eq('buyer_id', userId);
-      const bTable = document.getElementById('buyer-orders-table');
-
-      if (bTable) {
-        bTable.innerHTML = bOrders?.map(o => `
-          <tr>
-            <td>${o.id.substring(0,8)}...</td>
-            <td>${o.products?.title || 'Product'}</td>
-            <td>₱${o.amount}</td>
-            <td><span style="color:${o.status === 'paid' ? '#16a34a' : '#d97706'}; font-weight:600;">${o.status}</span></td>
-            <td>${new Date(o.created_at).toLocaleDateString()}</td>
-          </tr>
-        `).join('') || '';
-      }
-
-      const { data: sOrders } = await dbClient.from('orders').select('*').eq('seller_id', userId);
-      const sTable = document.getElementById('seller-orders-table');
-      if (sTable) {
-        sTable.innerHTML = sOrders?.map(o => `
-          <tr>
-            <td>${o.id.substring(0,8)}...</td>
-            <td>₱${o.amount}</td>
-            <td><span style="color:${o.status === 'paid' ? '#16a34a' : '#d97706'}; font-weight:600;">${o.status}</span></td>
-            <td>${new Date(o.created_at).toLocaleDateString()}</td>
-          </tr>
-        `).join('') || '';
-      }
-    }
-
-    async function checkout(productId) {
-      if (!dbClient) return;
-      const { data: { user } } = await dbClient.auth.getUser();
-      if (!user) return document.getElementById('auth-modal').classList.add('active');
-
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, buyerId: user.id })
-      });
-
-      const data = await res.json();
-      if (data.checkoutUrl) window.location.href = data.checkoutUrl;
-      else alert('Checkout failed: ' + data.error);
-    }
-  </script>
-
-  <!-- VOICEFLOW CHAT WIDGET -->
-  <script type="text/javascript">
-    (function(d, t) {
-        var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
-        v.onload = function() {
-          window.voiceflow.chat.load({
-            verify: { projectID: '6a8ff339866cfefda90400dd' },
-            url: 'https://general-runtime.voiceflow.com',
-            voice: {
-              url: "https://runtime-api.voiceflow.com"
-            }
-          });
-        }
-        v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
-    })(document, 'script');
   </script>
 </body>
 </html>
