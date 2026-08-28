@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="52TSis6wNZYxrpvQPnX8cg19kyHEcgM30pvLnfIyToA" />
+  
+  <!-- Sitemap Auto-Discovery -->
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+  
   <title>ApexDesk — Next-Gen Workspace Gear</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -92,6 +96,23 @@
     table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
     th, td { padding: 1rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: #F1F5F9; font-weight: 700; color: var(--primary); }
+
+    /* AI CHATBOT WIDGET STYLES */
+    .chat-toggle-btn { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 1.6rem; cursor: pointer; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35); z-index: 999; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+    .chat-toggle-btn:hover { transform: scale(1.08); }
+    
+    .chat-widget { position: fixed; bottom: 100px; right: 25px; width: 360px; height: 480px; background: #fff; border-radius: 16px; box-shadow: 0 12px 32px rgba(0,0,0,0.18); border: 1px solid var(--border); z-index: 999; display: none; flex-direction: column; overflow: hidden; }
+    .chat-widget.active { display: flex; }
+    .chat-header { background: var(--primary); color: #fff; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; }
+    .chat-header h4 { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; background: #f8fafc; }
+    .chat-msg { max-width: 80%; padding: 0.65rem 0.9rem; border-radius: 12px; font-size: 0.88rem; line-height: 1.4; }
+    .chat-msg.bot { background: #fff; color: var(--text-main); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
+    .chat-msg.user { background: var(--accent); color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+    .chat-input-area { padding: 0.75rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; background: #fff; }
+    .chat-input-area input { flex: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 20px; font-size: 0.88rem; outline: none; }
+    .chat-input-area input:focus { border-color: var(--accent); }
+    .chat-input-area button { background: var(--accent); color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
 
     /* FOOTER */
     footer { background: var(--primary); color: #fff; padding: 4rem 2rem 2rem; margin-top: 6rem; border-radius: 24px 24px 0 0; }
@@ -305,6 +326,23 @@
     </section>
   </main>
 
+  <!-- FLOATING AI CHATBOT WIDGET -->
+  <button class="chat-toggle-btn" onclick="toggleChatWidget()">🤖</button>
+  
+  <div class="chat-widget" id="ai-chat-widget">
+    <div class="chat-header">
+      <h4>🤖 ApexDesk AI Assistant</h4>
+      <button onclick="toggleChatWidget()" style="background:none; border:none; color:#fff; font-size:1.1rem; cursor:pointer;">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot">Hi! I'm your ApexDesk assistant. Ask me anything about our ergonomic chairs, desks, or GCash payments!</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Ask a question..." onkeypress="handleChatKeyPress(event)">
+      <button onclick="sendChatMessage()">Send</button>
+    </div>
+  </div>
+
   <!-- AUTH MODAL -->
   <div id="auth-modal" class="modal-backdrop">
     <div class="modal-box">
@@ -388,6 +426,43 @@
 
     let allProducts = [...defaultProducts];
 
+    /* CHATBOT FUNCTIONS */
+    function toggleChatWidget() {
+      document.getElementById('ai-chat-widget').classList.toggle('active');
+    }
+
+    function handleChatKeyPress(e) {
+      if (e.key === 'Enter') sendChatMessage();
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const container = document.getElementById('chat-messages');
+      container.innerHTML += `<div class="chat-msg user">${text}</div>`;
+      input.value = '';
+      container.scrollTop = container.scrollHeight;
+
+      // Simulated Bot Reply
+      setTimeout(() => {
+        let reply = "I'm happy to help! You can explore our Store tab or add items directly to your cart to check out via GCash.";
+        const lower = text.toLowerCase();
+        
+        if (lower.includes('chair')) {
+          reply = "Our Ergonomic Mesh Office Chair (₱8,999) offers breathable support and 3D adjustable armrests!";
+        } else if (lower.includes('desk') || lower.includes('standing')) {
+          reply = "The Dual-Motor Standing Desk (₱18,500) features automated height presets and a solid oak tabletop.";
+        } else if (lower.includes('gcash') || lower.includes('pay')) {
+          reply = "We support instant GCash checkouts powered by PayMongo! Just add items to your cart and click Checkout.";
+        }
+
+        container.innerHTML += `<div class="chat-msg bot">${reply}</div>`;
+        container.scrollTop = container.scrollHeight;
+      }, 600);
+    }
+
     function toggleAuthMode() {
       authMode = authMode === 'login' ? 'register' : 'login';
       const isReg = authMode === 'register';
@@ -468,7 +543,7 @@
       let total = 0;
       const itemsHtml = cart.map(item => {
         total += item.price;
-        return `<div style="display:flex; justify-height:space-between; margin-bottom:0.25rem;">
+        return `<div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
                   <span>${item.title}</span>
                   <strong>₱${item.price.toFixed(2)}</strong>
                 </div>`;
@@ -485,29 +560,36 @@
 
     async function processGCashPayment(e) {
       e.preventDefault();
-      const name = document.getElementById('checkout-name').value;
-      const phone = document.getElementById('checkout-phone').value;
+
+      if (cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+      }
+
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.innerText = 'Redirecting to PayMongo...';
+      submitBtn.disabled = true;
 
       try {
         const res = await fetch('/api/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cart, name, phone })
+          body: JSON.stringify({ cart })
         });
+
         const data = await res.json();
+
         if (data.checkoutUrl) {
           window.location.href = data.checkoutUrl;
         } else {
-          alert('Redirecting to GCash Gateway for verification...');
-          cart = [];
-          updateCartUI();
-          closeCheckoutModal();
+          alert('Error initiating checkout: ' + (data.error || 'Please try again.'));
+          submitBtn.innerText = 'Pay with GCash';
+          submitBtn.disabled = false;
         }
       } catch (err) {
-        alert('Order placed successfully! (Simulated GCash verification)');
-        cart = [];
-        updateCartUI();
-        closeCheckoutModal();
+        alert('Failed to connect to checkout service.');
+        submitBtn.innerText = 'Pay with GCash';
+        submitBtn.disabled = false;
       }
     }
 
