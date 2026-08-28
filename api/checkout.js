@@ -1,16 +1,11 @@
 module.exports = async (req, res) => {
-  // Allow CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
@@ -21,16 +16,16 @@ module.exports = async (req, res) => {
     const { cart } = req.body || {};
 
     if (!cart || !Array.isArray(cart) || cart.length === 0) {
-      return res.status(400).json({ error: 'Cart is empty or invalid' });
+      return res.status(400).json({ error: 'Cart is empty' });
     }
 
     const secretKey = process.env.PAYMONGO_SECRET_KEY;
     if (!secretKey) {
-      return res.status(500).json({ error: 'PAYMONGO_SECRET_KEY is missing in Vercel settings.' });
+      return res.status(500).json({ error: 'PAYMONGO_SECRET_KEY missing' });
     }
 
     const lineItems = cart.map((item) => ({
-      name: item.title || 'Product',
+      name: item.title || 'Item',
       amount: Math.round((item.price || 0) * 100),
       currency: 'PHP',
       quantity: 1,
