@@ -304,7 +304,7 @@
     const SUPABASE_URL = 'https://kttjrrpiionugwnkexuv.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Nadrf5z4Cjm3S6tSwibs3w_6rMgKBEY';
 
-    let supabase = null;
+    let dbClient = null;
     let authMode = 'login';
     let selectedProductId = null;
 
@@ -336,7 +336,7 @@
 
     function initSupabase() {
       if (typeof window.supabase !== 'undefined') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         checkUserSession();
         loadProducts();
       } else {
@@ -347,9 +347,9 @@
     window.addEventListener('DOMContentLoaded', initSupabase);
 
     async function checkUserSession() {
-      if (!supabase) return;
+      if (!dbClient) return;
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await dbClient.auth.getSession();
         const navAuth = document.getElementById('nav-auth');
         const navLogout = document.getElementById('nav-logout');
         const navDash = document.getElementById('nav-dashboard');
@@ -374,14 +374,14 @@
 
     async function handleAuthSubmit(e) {
       e.preventDefault();
-      if (!supabase) return alert('Auth service unavailable.');
+      if (!dbClient) return alert('Auth service unavailable.');
 
       const email = document.getElementById('modal-email').value;
       const password = document.getElementById('modal-password').value;
 
       try {
         if (authMode === 'login') {
-          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          const { error } = await dbClient.auth.signInWithPassword({ email, password });
           if (error) alert(error.message);
           else {
             document.getElementById('auth-modal').classList.remove('active');
@@ -391,11 +391,11 @@
           const fullName = document.getElementById('modal-name').value;
           const gcash = document.getElementById('modal-gcash').value;
 
-          const { data, error } = await supabase.auth.signUp({ email, password });
+          const { data, error } = await dbClient.auth.signUp({ email, password });
           if (error) return alert(error.message);
 
           if (data.user) {
-            await supabase.from('profiles').insert([{ id: data.user.id, full_name: fullName, gcash_number: gcash }]);
+            await dbClient.from('profiles').insert([{ id: data.user.id, full_name: fullName, gcash_number: gcash }]);
             alert('Registration complete!');
             document.getElementById('auth-modal').classList.remove('active');
             checkUserSession();
@@ -407,14 +407,14 @@
     }
 
     async function handleLogout() {
-      if (!supabase) return;
-      await supabase.auth.signOut();
+      if (!dbClient) return;
+      await dbClient.auth.signOut();
       location.reload();
     }
 
     async function loadProducts() {
-      if (!supabase) return;
-      const { data: products } = await supabase.from('products').select('*');
+      if (!dbClient) return;
+      const { data: products } = await dbClient.from('products').select('*');
       const storeContainer = document.getElementById('product-list');
       const homeContainer = document.getElementById('home-featured');
 
@@ -433,13 +433,13 @@
       `).join('');
 
       if (storeContainer) storeContainer.innerHTML = html;
-      if (homeContainer) homeContainer.innerHTML = html.slice(0, 3); // Display top 3 on home
+      if (homeContainer) homeContainer.innerHTML = html.slice(0, 3);
     }
 
     async function viewProduct(id) {
-      if (!supabase) return;
+      if (!dbClient) return;
       selectedProductId = id;
-      const { data: p } = await supabase.from('products').select('*').eq('id', id).single();
+      const { data: p } = await dbClient.from('products').select('*').eq('id', id).single();
       const content = document.getElementById('product-detail-content');
 
       if (content && p) {
@@ -460,8 +460,8 @@
     }
 
     async function loadReviews(productId) {
-      if (!supabase) return;
-      const { data: reviews } = await supabase.from('reviews').select('*, profiles(full_name)').eq('product_id', productId);
+      if (!dbClient) return;
+      const { data: reviews } = await dbClient.from('reviews').select('*, profiles(full_name)').eq('product_id', productId);
       const list = document.getElementById('reviews-list');
       if (!list) return;
 
@@ -481,11 +481,11 @@
 
     async function handleReviewSubmit(e) {
       e.preventDefault();
-      if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser();
+      if (!dbClient) return;
+      const { data: { user } } = await dbClient.auth.getUser();
       if (!user) return document.getElementById('auth-modal').classList.add('active');
 
-      await supabase.from('reviews').insert([{
+      await dbClient.from('reviews').insert([{
         product_id: selectedProductId,
         buyer_id: user.id,
         rating: parseInt(document.getElementById('review-rating').value),
@@ -498,8 +498,8 @@
 
     async function handleCreateProduct(e) {
       e.preventDefault();
-      if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser();
+      if (!dbClient) return;
+      const { data: { user } } = await dbClient.auth.getUser();
 
       const product = {
         seller_id: user.id,
@@ -509,7 +509,7 @@
         image_url: document.getElementById('p-image').value
       };
 
-      const { error } = await supabase.from('products').insert([product]);
+      const { error } = await dbClient.from('products').insert([product]);
       if (error) alert(error.message);
       else {
         alert('Product successfully published!');
@@ -518,8 +518,8 @@
     }
 
     async function loadDashboardData(userId) {
-      if (!supabase) return;
-      const { data: bOrders } = await supabase.from('orders').select('*, products(title)').eq('buyer_id', userId);
+      if (!dbClient) return;
+      const { data: bOrders } = await dbClient.from('orders').select('*, products(title)').eq('buyer_id', userId);
       const bTable = document.getElementById('buyer-orders-table');
 
       if (bTable) {
@@ -534,7 +534,7 @@
         `).join('') || '';
       }
 
-      const { data: sOrders } = await supabase.from('orders').select('*').eq('seller_id', userId);
+      const { data: sOrders } = await dbClient.from('orders').select('*').eq('seller_id', userId);
       const sTable = document.getElementById('seller-orders-table');
       if (sTable) {
         sTable.innerHTML = sOrders?.map(o => `
@@ -549,8 +549,8 @@
     }
 
     async function checkout(productId) {
-      if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser();
+      if (!dbClient) return;
+      const { data: { user } } = await dbClient.auth.getUser();
       if (!user) return document.getElementById('auth-modal').classList.add('active');
 
       const res = await fetch('/api/checkout', {
@@ -571,7 +571,7 @@
         var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
         v.onload = function() {
           window.voiceflow.chat.load({
-            verify: { projectID: '6a8ff33986cfefda90400dd' },
+            verify: { projectID: 'YOUR_ACTUAL_VOICEFLOW_PROJECT_ID' },
             url: 'https://general-runtime.voiceflow.com',
             voice: {
               url: "https://runtime-api.voiceflow.com"
