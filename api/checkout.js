@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // Allow requests from frontend
+  // CORS Preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -9,26 +9,32 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { cart } = req.body;
+    const { cart } = req.body || {};
 
     if (!cart || cart.length === 0) {
       return res.status(400).json({ error: 'Cart is empty' });
     }
 
-    // Format line items for PayMongo
+    const secretKey = process.env.PAYMONGO_SECRET_KEY;
+    if (!secretKey) {
+      return res.status(500).json({ error: 'PayMongo Secret Key is missing in Vercel environment variables.' });
+    }
+
+    // Format line items
     const lineItems = cart.map((item) => ({
       name: item.title || 'Product',
-      amount: Math.round((item.price || 0) * 100), // amount in centavos
+      amount: Math.round((item.price || 0) * 100), // convert PHP to centavos
       currency: 'PHP',
       quantity: 1,
     }));
 
-    // Call PayMongo API securely from server-side
+    const authHeader = 'Basic ' + Buffer.from(secretKey + ':').toString('base64');
+
     const paymongoResponse = await fetch('https://api.paymongo.com/v1/checkout_sessions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Basic ' + Buffer.from(process.env.PAYMONGO_SECRET_KEY + ':').toString('base64'),
+        Authorization: authHeader,
       },
       body: JSON.stringify({
         data: {
@@ -49,7 +55,7 @@ export default async function handler(req, res) {
 
     if (!paymongoResponse.ok) {
       return res.status(paymongoResponse.status).json({ 
-        error: data.errors?.[0]?.detail || 'Failed to create PayMongo checkout session' 
+        error: data.errors?.[0]?.detail || 'PayMongo session creation failed.' 
       });
     }
 
