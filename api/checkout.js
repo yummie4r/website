@@ -11,10 +11,10 @@ export default async function handler(req, res) {
 
   const secretKey = process.env.PAYMONGO_SECRET_KEY;
   if (!secretKey) {
-    return res.status(500).json({ error: 'PayMongo secret key is missing in Vercel settings.' });
+    return res.status(500).json({ error: 'PAYMONGO_SECRET_KEY is missing in Vercel settings.' });
   }
 
-  // Convert prices to centavos (PHP * 100)
+  // Format line items for PayMongo (amount in centavos: PHP * 100)
   const lineItems = cart.map((item) => ({
     name: item.title,
     amount: Math.round(item.price * 100),
@@ -54,8 +54,9 @@ export default async function handler(req, res) {
       });
     }
 
+    // Returns the official PayMongo checkout redirect link
     return res.status(200).json({ checkoutUrl: data.data.attributes.checkout_url });
   } catch (err) {
-    return res.status(500).json({ error: 'Internal server connection error.' });
+    return res.status(500).json({ error: 'Internal server error connecting to PayMongo.' });
   }
 }
