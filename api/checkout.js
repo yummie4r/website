@@ -1,51 +1,35 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { productId, buyerId } = req.body;
+  const { cart } = req.body || {};
+
+  if (!cart || cart.length === 0) {
+    return res.status(400).json({ error: 'Cart is empty' });
+  }
+
+  const secretKey = process.env.PAYMONGO_SECRET_KEY;
+  if (!secretKey) {
+    return res.status(500).json({ error: 'PayMongo secret key is missing in Vercel settings.' });
+  }
+
+  // Convert prices to centavos (PHP * 100)
+  const lineItems = cart.map((item) => ({
+    name: item.title,
+    amount: Math.round(item.price * 100),
+    currency: 'PHP',
+    quantity: 1,
+  }));
+
+  const authHeader = `Basic ${Buffer.from(`${secretKey.trim()}:`).toString('base64')}`;
 
   try {
-    // 1. Fetch Product
-    const { data: product, error: prodErr } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', productId)
-      .single();
-
-    if (prodErr || !product) throw new Error('Product not found');
-
-    // 2. Create Pending Order in Supabase
-    const { data: order, error: orderErr } = await supabase
-      .from('orders')
-      .insert([
-        {
-          buyer_id: buyerId,
-          seller_id: product.seller_id,
-          product_id: product.id,
-          amount: product.price,
-          status: 'pending'
-        }
-      ])
-      .select()
-      .single();
-
-    if (orderErr) throw new Error('Failed to create order');
-
-    // 3. Initiate PayMongo Checkout Session
-    const paymongoOptions = {
+    const response = await fetch('https://api.paymongo.com/v1/checkout_sessions', {
       method: 'POST',
       headers: {
-        accept: 'application/json',
         'Content-Type': 'application/json',
-        authorization: `Basic ${Buffer.from(process.env.PAYMONGO_SECRET_KEY).toString('base64')}`
+        Authorization: authHeader,
       },
       body: JSON.stringify({
         data: {
@@ -53,39 +37,25 @@ export default async function handler(req, res) {
             send_email_receipt: true,
             show_description: true,
             show_line_items: true,
-            payment_method_types: ['gcash', 'card', 'paymaya'],
-            line_items: [
-              {
-                currency: 'PHP',
-                amount: Math.round(product.price * 100), // PayMongo expects centavos
-                description: product.description,
-                name: product.title,
-                quantity: 1
-              }
-            ],
-            reference_number: order.id,
-            success_url: `${process.env.VERCEL_URL || 'http://localhost:3000'}/?status=success`,
-            cancel_url: `${process.env.VERCEL_URL || 'http://localhost:3000'}/?status=cancelled`
-          }
-        }
-      })
-    };
+            payment_method_types: ['gcash', 'paymaya', 'card'],
+            line_items: lineItems,
+            success_url: `https://${req.headers.host}/?status=success`,
+            cancel_url: `https://${req.headers.host}/?status=cancelled`,
+          },
+        },
+      }),
+    });
 
-    const response = await fetch('https://api.paymongo.com/v1/checkout_sessions', paymongoOptions);
-    const sessionData = await response.json();
+    const data = await response.json();
 
-    if (sessionData.errors) {
-      throw new Error(sessionData.errors[0].detail);
+    if (!response.ok) {
+      return res.status(400).json({ 
+        error: data.errors?.[0]?.detail || 'Failed to generate PayMongo session.' 
+      });
     }
 
-    // 4. Update order with PayMongo Checkout Session ID
-    await supabase
-      .from('orders')
-      .update({ paymongo_session_id: sessionData.data.id })
-      .eq('id', order.id);
-
-    return res.status(200).json({ checkoutUrl: sessionData.data.attributes.checkout_url });
+    return res.status(200).json({ checkoutUrl: data.data.attributes.checkout_url });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: 'Internal server connection error.' });
   }
 }
